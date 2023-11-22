@@ -6,6 +6,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 
 function DummyForm() {
     const dbURLRef: RefObject<HTMLInputElement> = useRef(null);
+    const dbNameRef: RefObject<HTMLInputElement> = useRef(null);
     const dbUserNameRef: RefObject<HTMLInputElement> = useRef(null);
     const dbPassRef: RefObject<HTMLInputElement> = useRef(null);
     const questionRef: RefObject<HTMLInputElement> = useRef(null);
@@ -20,6 +21,7 @@ function DummyForm() {
         axios.get("/answer", {
             params: {
                 dbURL: dbURLRef.current?.value,
+                dbName: dbNameRef.current?.value,
                 dbUserName: dbUserNameRef.current?.value,
                 dbPass: dbPassRef.current?.value,
                 question: questionRef.current?.value
@@ -41,6 +43,10 @@ function DummyForm() {
             <label>
                 DB URL: 
                 <input type="text" ref={dbURLRef} />
+            </label>
+            <label>
+                DB Name: 
+                <input type="text" ref={dbNameRef} />
             </label>
             <label>
                 DB UserName:

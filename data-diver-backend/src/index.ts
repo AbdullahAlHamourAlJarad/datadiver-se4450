@@ -12,6 +12,7 @@ app.get('/', (req: Request, res: Response) => {
 
 app.get('/answer', (req: Request, res: Response) => {
   let dbURL = req.query.dbURL;
+  let dbName = req.query.dbName;
   let dbUserName = req.query.dbUserName;
   let dbPass = req.query.dbPass;
   let question = req.query.question;
