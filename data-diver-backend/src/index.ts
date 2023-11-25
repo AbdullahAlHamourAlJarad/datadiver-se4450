@@ -1,5 +1,7 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
+import makeRequest from './connOpenAI';
+import { error } from 'console';
 
 dotenv.config();
 
@@ -18,7 +20,8 @@ app.get('/answer', (req: Request, res: Response) => {
   let question = req.query.question;
 
   //TODO send back the actual answer
-  res.send('Kareem Is The Best!!');
+  makeRequest();
+  res.send('Hello');
 });
 
 app.listen(port, () => {
