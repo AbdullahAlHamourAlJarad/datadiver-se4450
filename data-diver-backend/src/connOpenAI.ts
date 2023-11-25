@@ -1,8 +1,10 @@
 import axios from 'axios';
+import dotenv from 'dotenv';
 
+dotenv.config();
 
 // Set your API key
-const apiKey = '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';
+const apiKey = process.env.OPENAI_API_KEY;
 
 // Define your prompt or input text
 const prompt = 'Translate the following English text to French:';
