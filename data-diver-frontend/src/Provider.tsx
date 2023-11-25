@@ -5,7 +5,7 @@ export const AnswerContext = React.createContext<{receivedAnswer: string | null,
     setReceivedAnswer: (ans) => {}
 });
 
-export default function Provider({ children }: {children: ReactNode}) {
+export default function Provider({ children }: Readonly<{children: ReactNode}>) {
     const [receivedAnswer, setReceivedAnswer] = useState<string | null>(null);
 
     return (

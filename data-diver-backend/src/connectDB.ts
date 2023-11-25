@@ -1,18 +1,17 @@
 import * as sql from 'mssql';
 
-console.log('test')
 // Configuring the connection pool
-const config: sql.config = {
-  user: 'datadiveradmin',
-  password: 'ouda2023!',
-  server: 'datadiverserver.database.windows.net',
-  database: 'DataDiverDB',
-  options: {
-    encrypt: true, // For Azure SQL Database, set to true
-  },
-};
+async function connectToDatabase(serverUrl: string, database: string, dbUserName: string, dbPassword: string) {
+  const config: sql.config = {
+    user: dbUserName,
+    password: dbPassword,
+    server: serverUrl,
+    database: database,
+    options: {
+      encrypt: true, // For Azure SQL Database, set to true
+    },
+  };
 
-async function connectToDatabase() {
   try {
     // Create a new instance of the connection pool
     const pool = await new sql.ConnectionPool(config).connect();
@@ -30,4 +29,4 @@ async function connectToDatabase() {
 }
 
 // Connect to the database
-connectToDatabase();
+connectToDatabase('datadiverserver.database.windows.net', 'DataDiverDB', 'datadiveradmin', 'ouda2023!');
