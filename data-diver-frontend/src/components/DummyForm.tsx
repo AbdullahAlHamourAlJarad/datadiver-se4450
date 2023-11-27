@@ -18,7 +18,7 @@ function DummyForm() {
 
     function onAsk(_e: SyntheticEvent) {
         setIsLoading(true);
-        axios.get("/answer", {
+        axios.get("/conversation/answer", {
             params: {
                 dbURL: dbURLRef.current?.value,
                 dbName: dbNameRef.current?.value,
@@ -27,7 +27,11 @@ function DummyForm() {
                 question: questionRef.current?.value
             }
         }).then((data) => {
-            setReceivedAnswer(data.data);
+            console.log(data.data)
+            setReceivedAnswer(JSON.stringify(data.data.data));
+            /*TODO put values as a table. data.data.data will return a list. data.data.query will contain the query used 
+            Create a for loop that loops over keys of the any element to get column names and then populate the table with 
+            all the elements in the list*/
 
         }).catch(err => {
             console.log(err);
