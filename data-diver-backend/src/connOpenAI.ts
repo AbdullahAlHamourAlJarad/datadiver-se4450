@@ -47,8 +47,6 @@ export async function makeOpenAIRequest(systemPrompt: string, userPrompt: string
       response_format: { type: "json_object" },
     });
   
-    console.log(typeof response.choices[0].message.content)
-
     return JSON.parse(response.choices[0].message.content ?? "");
   } catch(error) {
     console.error('Error making API request:', error);
