@@ -1,7 +1,8 @@
 import { Grid, IconButton, Paper, Stack, TextField, Typography, styled } from '@mui/material'
-import React, { RefObject, useContext, useRef, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { AnswerContext } from '../Provider'
 import axios from 'axios'
+import Typing from './Typing'
 
 type ChatProps = {
     dbURL: string
@@ -90,6 +91,10 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
         }
     })
 
+    const [isLoading, setIsLoading] = useState(false)
+    const [userMessage, setUserMessage] = useState('')
+    const { receivedAnswer, setReceivedAnswer } = useContext(AnswerContext)
+
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const textField = e.currentTarget.querySelector('input') as HTMLInputElement;
@@ -122,9 +127,27 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
         console.log("Retry")
     }
 
-    const [isLoading, setIsLoading] = useState(false)
-    const [userMessage, setUserMessage] = useState('')
-    const { receivedAnswer, setReceivedAnswer } = useContext(AnswerContext)
+    const renderSystemChat = () => {
+        if(isLoading) {
+            return (
+                <SystemChatBubble>
+                    <ChatLine>
+                        <Typing />
+                    </ChatLine>
+                </SystemChatBubble>
+            );
+        } else if(receivedAnswer) {
+            return (
+                <SystemChatBubble>
+                    <ChatLine>
+                        {receivedAnswer}
+                    </ChatLine>
+                </SystemChatBubble>
+            );
+        } 
+
+        return(<></>);
+    }
 
     return (
         <Grid container>
@@ -137,13 +160,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                             </ChatLine>
                         </UserChatBubble>
                     }
-                    {receivedAnswer &&
-                        <SystemChatBubble>
-                            <ChatLine>
-                                {receivedAnswer}
-                            </ChatLine>
-                        </SystemChatBubble>
-                    }
+                    { renderSystemChat() }
                 </ChatBox>
             </Grid>
 
@@ -161,7 +178,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                             </svg>
                         </ChatButton>
                         <UserInput disabled={isLoading} placeholder='Ask DataDiver a question...' />
-                        <ChatButton type='submit'>
+                        <ChatButton type='submit' disabled={isLoading}>
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 height="30px"
