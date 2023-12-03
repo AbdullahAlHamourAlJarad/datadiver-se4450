@@ -94,10 +94,6 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
         e.preventDefault();
         const textField = e.currentTarget.querySelector('input') as HTMLInputElement;
         setUserMessage(textField.value)
-        if (textField) {
-            textField.value = ''
-            textField.blur();
-        }
         setIsLoading(true)
         axios.get("/conversation/answer", {
             params: {
@@ -105,7 +101,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                 dbName: dbName,
                 dbUserName: dbUsername,
                 dbPass: dbPassword,
-                question: userMessage,
+                question: textField.value,
             }
         }).then((data) => {
             console.log(data.data)
@@ -116,6 +112,8 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
         }).catch(err => {
             console.log(err);
         }).finally(() => {
+            textField.value = ''
+            textField.blur()
             setIsLoading(false);
         });
     }
