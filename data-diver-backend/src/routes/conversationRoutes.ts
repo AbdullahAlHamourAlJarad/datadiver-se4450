@@ -83,15 +83,11 @@ const createOpenAISystemRolePrompt = (databaseSchema: ITableSchema[]): string =>
     let prompt = "Given the following SQL tables, your job is to write queries given a user's request and output as JSON.\n";
 
     for(let tableSchema of databaseSchema) {
-        //TODO Remove this if statement. It was added to reduce openAI cost
-        if(["Customer", "ProductModel", "ProductDescription", "Product", "ProductModelProductDescription", "ProductCategory", "Address", "CustomerAddress", "SalesOrderDetail", "SalesOrderHeader"].includes(tableSchema.tableName)) {
-            prompt += `CREATE TABLE ${tableSchema.tableName} (\n`;
-            for(let column of tableSchema.columnNames) {
-                prompt += " " + column.columnName + " " + column.dataType + ",\n";
-            }
-            prompt += ");\n\n"
+        prompt += `CREATE TABLE ${tableSchema.tableName} (\n`;
+        for(let column of tableSchema.columnNames) {
+            prompt += " " + column.columnName + " " + column.dataType + ",\n";
         }
-
+        prompt += ");\n\n"
     }
 
     return prompt;
