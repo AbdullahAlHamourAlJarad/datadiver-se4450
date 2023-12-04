@@ -33,8 +33,12 @@ conversationRoutes.get('/answer', async (req, res, next) => {
         }
 
         connection!.close();
-    } catch(error) {
-        next(new Error("Failed to retrieve information from the given database"))
+    } catch(error: any) {
+        console.error(error)
+        if(error.message)
+            next(new Error(error.message))
+        else 
+            next(new Error("Failed to retrieve information from the given database"))
     }
 });
 

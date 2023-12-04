@@ -50,5 +50,6 @@ export async function makeOpenAIRequest(systemPrompt: string, userPrompt: string
     return JSON.parse(response.choices[0].message.content ?? "");
   } catch(error) {
     console.error('Error making API request:', error);
+    throw new Error("Failed to process question");
   }
 }

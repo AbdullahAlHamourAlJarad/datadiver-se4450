@@ -45,8 +45,12 @@ export async function createNewDBConnection(serverUrl: string, database: string,
     const connection = await new sql.ConnectionPool(config).connect();
 
     return connection;
-  } catch (err) {
-    console.error('Error occurred connecting to database:', err);
+  } catch (error: any) {
+    console.error('Error occurred connecting to database:', error);
+    if(error?.code === 'ELOGIN' && error.originalError)
+      throw new Error(error.originalError)
+    else 
+      throw new Error("Failed to retrieve information from the given database")
   }
 }
 

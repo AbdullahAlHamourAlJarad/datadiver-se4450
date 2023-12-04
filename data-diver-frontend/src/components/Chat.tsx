@@ -116,6 +116,10 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
             all the elements in the list*/
         }).catch(err => {
             console.log(err);
+            if(err.response.data.message)
+                setReceivedAnswer(err.response.data.message);
+            else 
+                setReceivedAnswer("Error Occurred");
         }).finally(() => {
             textField.value = ''
             textField.blur()
