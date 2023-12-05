@@ -1,8 +1,16 @@
-import { Grid, IconButton, Paper, Stack, TextField, Typography, styled } from '@mui/material'
+import { Grid, IconButton, Paper, Stack, TextField, Typography, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import React, { useContext, useState } from 'react'
 import { AnswerContext } from '../Provider'
 import axios from 'axios'
 import Typing from './Typing'
+
+interface DataItem {
+    // Define properties and their types according to your data structure
+    // For example:
+    id: number;
+    name: string;
+    // ... other properties
+}
 
 type ChatProps = {
     dbURL: string
@@ -91,6 +99,18 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
         }
     })
 
+    const tableStyle = {
+        backgroundColor: '#5A6C83',
+    };
+
+    const tableHeadCellStyle = {
+        color: 'white', // Setting text color to white
+    };
+
+    const tableBodyCellStyle = {
+        color: 'black', // Setting text color to black
+    };
+
     const [isLoading, setIsLoading] = useState(false)
     const [userMessage, setUserMessage] = useState('')
     const { receivedAnswer, setReceivedAnswer } = useContext(AnswerContext)
@@ -100,6 +120,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
         const textField = e.currentTarget.querySelector('input') as HTMLInputElement;
         setUserMessage(textField.value)
         setIsLoading(true)
+
         axios.get("/conversation/answer", {
             params: {
                 dbURL: dbURL,
@@ -108,18 +129,44 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                 dbPass: dbPassword,
                 question: textField.value,
             }
-        }).then((data) => {
-            console.log(data.data)
-            setReceivedAnswer(JSON.stringify(data.data.data));
-            /*TODO put values as a table. data.data.data will return a list. data.data.query will contain the query used 
-            Create a for loop that loops over keys of the any element to get column names and then populate the table with 
-            all the elements in the list*/
-        }).catch(err => {
-            console.log(err);
-            if(err.response.data.message)
-                setReceivedAnswer(err.response.data.message);
-            else 
-                setReceivedAnswer("Error Occurred");
+        }).then((response) => {
+            const dataList: DataItem[] = response.data.data; // List of DataItem
+
+            if (dataList.length > 0) {
+                const columns = Object.keys(dataList[0]);
+
+                const tableContent = (
+                    <TableContainer component={Paper}>
+                        <Table sx={tableStyle}>
+                            <TableHead>
+                                <TableRow>
+                                    {columns.map(columnName => (
+                                        <TableCell key={columnName} sx={tableHeadCellStyle}>{columnName}</TableCell>
+                                    ))}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {dataList.map((dataItem, index) => (
+                                    <TableRow key={index}>
+                                        {columns.map(columnName => (
+                                            <TableCell key={columnName} sx={tableBodyCellStyle}>
+                                                {dataItem[columnName as keyof DataItem]}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                );
+
+                setReceivedAnswer(tableContent);
+            } else {
+                setReceivedAnswer("No data available");
+            }
+        }).catch(error => {
+            console.error("Error fetching data:", error);
+            setReceivedAnswer("Error occurred while fetching data");
         }).finally(() => {
             textField.value = ''
             textField.blur()
