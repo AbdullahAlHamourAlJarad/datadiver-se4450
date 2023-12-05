@@ -40,7 +40,8 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
         backgroundColor: '#51545F',
         marginTop: '15px',
         marginLeft: '15px',
-        marginRight: 'auto'
+        marginRight: 'auto',
+        padding: '15px'
     })
 
     const ChatLine = styled(Typography)({
@@ -100,15 +101,16 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
     })
 
     const tableStyle = {
-        backgroundColor: '#5A6C83',
+        backgroundColor: '#51545F',
     };
 
     const tableHeadCellStyle = {
-        color: 'white', // Setting text color to white
+        color: '#DCDCDF',
+        backgroundColor: '#262A38',
     };
 
     const tableBodyCellStyle = {
-        color: 'black', // Setting text color to black
+        color: '#DCDCDF',
     };
 
     const [isLoading, setIsLoading] = useState(false)
@@ -130,37 +132,8 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                 question: textField.value,
             }
         }).then((response) => {
-            const dataList: DataItem[] = response.data.data; // List of DataItem
-
-            if (dataList.length > 0) {
-                const columns = Object.keys(dataList[0]);
-
-                const tableContent = (
-                    <TableContainer component={Paper}>
-                        <Table sx={tableStyle}>
-                            <TableHead>
-                                <TableRow>
-                                    {columns.map(columnName => (
-                                        <TableCell key={columnName} sx={tableHeadCellStyle}>{columnName}</TableCell>
-                                    ))}
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {dataList.map((dataItem, index) => (
-                                    <TableRow key={index}>
-                                        {columns.map(columnName => (
-                                            <TableCell key={columnName} sx={tableBodyCellStyle}>
-                                                {dataItem[columnName as keyof DataItem]}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                );
-
-                setReceivedAnswer(tableContent);
+            if (response.data.data.length > 0) {
+                setReceivedAnswer(response.data.data);
             } else {
                 setReceivedAnswer("No data available");
             }
@@ -179,7 +152,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
     }
 
     const renderSystemChat = () => {
-        if(isLoading) {
+        if (isLoading) {
             return (
                 <SystemChatBubble>
                     <ChatLine>
@@ -187,17 +160,39 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                     </ChatLine>
                 </SystemChatBubble>
             );
-        } else if(receivedAnswer) {
+        } else if (receivedAnswer) {
+            const columns = Object.keys(receivedAnswer[0]);
             return (
                 <SystemChatBubble>
-                    <ChatLine>
-                        {receivedAnswer}
-                    </ChatLine>
+                    <TableContainer component={Paper} elevation={24} sx={{backgroundColor: '#51545F'}}>
+                        <Table sx={tableStyle}>
+                            <TableHead>
+                                <TableRow>
+                                    {columns.map(columnName => (
+                                        <TableCell key={columnName} sx={tableHeadCellStyle}>{columnName}</TableCell>
+                                    ))}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {receivedAnswer.map((dataItem: any, index: number) => (
+                                    <TableRow key={index} sx={{"&:last-child th, &:last-child td": {
+                                        borderBottom: 0,
+                                      }}}>
+                                        {columns.map(columnName => (
+                                            <TableCell key={columnName} sx={tableBodyCellStyle}>
+                                                {dataItem[columnName as keyof DataItem]}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 </SystemChatBubble>
             );
-        } 
+        }
 
-        return(<></>);
+        return (<></>);
     }
 
     return (
@@ -211,7 +206,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                             </ChatLine>
                         </UserChatBubble>
                     }
-                    { renderSystemChat() }
+                    {renderSystemChat()}
                 </ChatBox>
             </Grid>
 

@@ -1,6 +1,6 @@
 import React, { ReactNode, useState } from 'react'
 
-export const AnswerContext = React.createContext<{receivedAnswer: string | null, setReceivedAnswer: (ans: any) => any}>({  
+export const AnswerContext = React.createContext<{receivedAnswer: any | null, setReceivedAnswer: (ans: any) => any}>({  
     receivedAnswer: null,
     setReceivedAnswer: (ans) => {}
 });
