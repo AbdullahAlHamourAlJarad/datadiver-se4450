@@ -26,7 +26,7 @@ conversationRoutes.get('/answer', async (req, res, next) => {
         let answer = await connection!.request().query(openAIResponse.query);
         console.log(answer)
 
-        if(!answer.recordset || answer.recordset.length === 0) {
+        if(!answer.recordset) {
             res.status(404).send("No results found")
         } else {
             res.send({data: answer.recordset, query: openAIResponse.query})
@@ -84,7 +84,7 @@ interface ITableSchema {
  * table names, column names and their types.
  */
 const createOpenAISystemRolePrompt = (databaseSchema: ITableSchema[]): string => {
-    let prompt = "Given the following SQL tables, your job is to write queries given a user's request and output as JSON.\n";
+    let prompt = "Given the following SQL tables, your job is to write queries given a user's request and output as JSON with 'query' attribute.\n";
 
     for(let tableSchema of databaseSchema) {
         prompt += `CREATE TABLE ${tableSchema.tableName} (\n`;

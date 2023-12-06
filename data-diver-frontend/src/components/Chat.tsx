@@ -3,6 +3,9 @@ import React, { useContext, useState } from 'react'
 import { AnswerContext } from '../Provider'
 import axios from 'axios'
 import Typing from './Typing'
+import InspectQuery from './InspectQuery';
+import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded'
+import SendRoundedIcon from '@mui/icons-material/SendRounded'
 
 interface DataItem {
     // Define properties and their types according to your data structure
@@ -113,8 +116,9 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
         color: '#DCDCDF',
     };
 
-    const [isLoading, setIsLoading] = useState(false)
-    const [userMessage, setUserMessage] = useState('')
+    const [isLoading, setIsLoading] = useState(false);
+    const [userMessage, setUserMessage] = useState('');
+    const [receivedAnswerQuery, setReceivedAnswerQuery] = useState("");
     const { receivedAnswer, setReceivedAnswer } = useContext(AnswerContext)
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -137,9 +141,11 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
             } else {
                 setReceivedAnswer("No data available");
             }
+
+            setReceivedAnswerQuery(response.data.query)
         }).catch(error => {
             console.error("Error fetching data:", error);
-            setReceivedAnswer("Error occurred while fetching data");
+            setReceivedAnswer(error.response.data);
         }).finally(() => {
             textField.value = ''
             textField.blur()
@@ -160,7 +166,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                     </ChatLine>
                 </SystemChatBubble>
             );
-        } else if (receivedAnswer) {
+        } else if (receivedAnswer && typeof(receivedAnswer) !== "string") {
             const columns = Object.keys(receivedAnswer[0]);
             return (
                 <SystemChatBubble>
@@ -188,11 +194,19 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                             </TableBody>
                         </Table>
                     </TableContainer>
+                    <InspectQuery query={receivedAnswerQuery}/>
                 </SystemChatBubble>
             );
+        } else if(receivedAnswer && typeof(receivedAnswer) === "string") {
+            return (
+                <SystemChatBubble>
+                    {receivedAnswer}
+                    <InspectQuery query={receivedAnswerQuery}/>
+                </SystemChatBubble>
+            );
+
         }
 
-        return (<></>);
     }
 
     return (
@@ -214,25 +228,11 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                 <ChatFooter sx={{ height: '100%' }}>
                     <form onSubmit={handleSubmit}>
                         <ChatButton onClick={handleRetry}>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                height="30px"
-                                width="30px"
-                                viewBox="-3 -3 28 28"
-                                fill="#5A6C83">
-                                <path d="M18.885 3.515c-4.617-4.618-12.056-4.676-16.756-.195l-2.129-2.258v7.938h7.484l-2.066-2.191c2.82-2.706 7.297-2.676 10.073.1 4.341 4.341 1.737 12.291-5.491 12.291v4.8c3.708 0 6.614-1.244 8.885-3.515 4.686-4.686 4.686-12.284 0-16.97z" />
-                            </svg>
+                            <ReplayRoundedIcon fontSize='large' htmlColor='#5A6C83'/>
                         </ChatButton>
                         <UserInput disabled={isLoading} placeholder='Ask DataDiver a question...' />
                         <ChatButton type='submit' disabled={isLoading}>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                height="30px"
-                                width="30px"
-                                viewBox="0 0 23 23"
-                                fill="#5A6C83">
-                                <path d="M3.4 20.4l17.45-7.48c.81-.35.81-1.49 0-1.84L3.4 3.6c-.66-.29-1.39.2-1.39.91L2 9.12c0 .5.37.93.87.99L17 12 2.87 13.88c-.5.07-.87.5-.87 1l.01 4.61c0 .71.73 1.2 1.39.91z" />
-                            </svg>
+                            <SendRoundedIcon fontSize='large' htmlColor='#5A6C83'/>
                         </ChatButton>
                     </form>
                 </ChatFooter>

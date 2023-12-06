@@ -13,10 +13,8 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 
-
-//Error Handler Middleware
 app.use(router)
-app.use(errorHandler)
+app.use(errorHandler) //Error Handler Middleware
 
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
