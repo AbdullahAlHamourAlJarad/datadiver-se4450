@@ -145,7 +145,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
             setReceivedAnswerQuery(response.data.query)
         }).catch(error => {
             console.error("Error fetching data:", error);
-            setReceivedAnswer(error.response.data);
+            setReceivedAnswer("Error Fetching Data!");
         }).finally(() => {
             textField.value = ''
             textField.blur()

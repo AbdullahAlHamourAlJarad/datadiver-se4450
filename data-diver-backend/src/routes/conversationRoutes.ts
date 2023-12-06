@@ -84,7 +84,7 @@ interface ITableSchema {
  * table names, column names and their types.
  */
 const createOpenAISystemRolePrompt = (databaseSchema: ITableSchema[]): string => {
-    let prompt = "Given the following SQL tables, your job is to write queries given a user's request and output as JSON with 'query' attribute.\n";
+    let prompt = "Given the following MSSQL tables, your job is to write queries given a user's request and output as JSON with 'query' attribute.\n";
 
     for(let tableSchema of databaseSchema) {
         prompt += `CREATE TABLE ${tableSchema.tableName} (\n`;
