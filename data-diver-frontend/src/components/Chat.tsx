@@ -200,8 +200,10 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
         } else if(receivedAnswer && typeof(receivedAnswer) === "string") {
             return (
                 <SystemChatBubble>
-                    {receivedAnswer}
-                    <InspectQuery query={receivedAnswerQuery}/>
+                    <ChatLine>
+                        {receivedAnswer}
+                        <InspectQuery query={receivedAnswerQuery}/>
+                    </ChatLine>
                 </SystemChatBubble>
             );
 
