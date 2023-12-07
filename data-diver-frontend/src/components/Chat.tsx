@@ -1,19 +1,14 @@
-import { Grid, IconButton, Paper, Stack, TextField, Typography, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import React, { useContext, useState } from 'react'
+import { Grid, IconButton, Paper, Stack, TextField, Typography, styled } from '@mui/material';
+import React, { useContext, useMemo, useState } from 'react'
 import { AnswerContext } from '../Provider'
 import axios from 'axios'
 import Typing from './Typing'
 import InspectQuery from './InspectQuery';
 import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded'
 import SendRoundedIcon from '@mui/icons-material/SendRounded'
+import { GridColDef, GridRowsProp } from '@mui/x-data-grid';
+import DataTable from './DataTable';
 
-interface DataItem {
-    // Define properties and their types according to your data structure
-    // For example:
-    id: number;
-    name: string;
-    // ... other properties
-}
 
 type ChatProps = {
     dbURL: string
@@ -101,25 +96,12 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
         '&:hover': {
             backgroundColor: '#3E4B5B'
         }
-    })
-
-    const tableStyle = {
-        backgroundColor: '#51545F',
-    };
-
-    const tableHeadCellStyle = {
-        color: '#DCDCDF',
-        backgroundColor: '#262A38',
-    };
-
-    const tableBodyCellStyle = {
-        color: '#DCDCDF',
-    };
+    });
 
     const [isLoading, setIsLoading] = useState(false);
     const [userMessage, setUserMessage] = useState('');
     const [receivedAnswerQuery, setReceivedAnswerQuery] = useState("");
-    const { receivedAnswer, setReceivedAnswer } = useContext(AnswerContext)
+    const { receivedAnswer, setReceivedAnswer } = useContext(AnswerContext); //TODO Refactor
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -167,33 +149,15 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                 </SystemChatBubble>
             );
         } else if (receivedAnswer && typeof(receivedAnswer) !== "string") {
-            const columns = Object.keys(receivedAnswer[0]);
+            const columns: GridColDef[] = Object.keys(receivedAnswer[0])
+                .map(col => {return {field: col, headerName: col }});
+            const rows: GridRowsProp = receivedAnswer.map((row: any, index: number) => {
+                return {...row, id: index}
+            });
+
             return (
                 <SystemChatBubble>
-                    <TableContainer component={Paper} elevation={24} sx={{backgroundColor: '#51545F'}}>
-                        <Table sx={tableStyle}>
-                            <TableHead>
-                                <TableRow>
-                                    {columns.map(columnName => (
-                                        <TableCell key={columnName} sx={tableHeadCellStyle}>{columnName}</TableCell>
-                                    ))}
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {receivedAnswer.map((dataItem: any, index: number) => (
-                                    <TableRow key={index} sx={{"&:last-child th, &:last-child td": {
-                                        borderBottom: 0,
-                                      }}}>
-                                        {columns.map(columnName => (
-                                            <TableCell key={columnName} sx={tableBodyCellStyle}>
-                                                {dataItem[columnName as keyof DataItem]}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                    <DataTable columns={columns} rows={rows} />
                     <InspectQuery query={receivedAnswerQuery}/>
                 </SystemChatBubble>
             );
