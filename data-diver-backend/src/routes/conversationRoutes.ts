@@ -17,13 +17,13 @@ conversationRoutes.get('/answer', async (req, res, next) => {
 
         /*TODO This will be done in a different api call when user first connects and 
         the result will be stored somewhere for whenever they call the /answer api it doesn't need to redo this logic*/ 
-        let result = await connection!.request().query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS");
+        let result = await connection.request().query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS");
         let systemPrompt = createOpenAISystemRolePrompt(parseDatabaseSchema(result.recordset));
 
         let openAIResponse = await makeOpenAIRequest(systemPrompt, question);
         console.log(openAIResponse.query);
 
-        let answer = await connection!.request().query(openAIResponse.query);
+        let answer = await connection.request().query(openAIResponse.query);
         console.log(answer)
 
         if(!answer.recordset) {
