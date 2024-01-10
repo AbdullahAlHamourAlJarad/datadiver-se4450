@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Paper, TableContainer } from '@mui/material';
 import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
+import '../css/DataTable.css'
 
 
 const DataTable = (props: {columns: GridColDef[], rows: GridRowsProp}) => {
@@ -10,12 +11,6 @@ const DataTable = (props: {columns: GridColDef[], rows: GridRowsProp}) => {
 
     const tableSytle = {
         alignSelf: 'flex-start',
-        '& .table--row': {
-          backgroundColor: '#DCDCDF',
-          '&:hover': {
-            backgroundColor: '#DCDCDF',
-          }
-        },
         '& .table--header': {
             color: '#DCDCDF',
             backgroundColor: '#262A38',

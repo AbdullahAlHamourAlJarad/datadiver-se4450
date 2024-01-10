@@ -1,5 +1,5 @@
 import { Grid, IconButton, Paper, Stack, TextField, Typography, styled } from '@mui/material';
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { AnswerContext } from '../Provider'
 import axios from 'axios'
 import Typing from './Typing'

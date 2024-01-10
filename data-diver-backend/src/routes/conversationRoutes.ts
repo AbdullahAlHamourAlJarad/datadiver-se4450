@@ -32,7 +32,7 @@ conversationRoutes.get('/answer', async (req, res, next) => {
             res.send({data: answer.recordset, query: openAIResponse.query})
         }
 
-        connection!.close();
+        connection.close();
     } catch(error: any) {
         console.error(error)
         if(error.message)

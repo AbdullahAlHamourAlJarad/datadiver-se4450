@@ -1,7 +1,4 @@
-import React, { RefObject, SyntheticEvent, useContext, useRef, useState } from 'react'
-import axios from 'axios';
-import { AnswerContext } from '../Provider';
-import { ErrorBoundary } from 'react-error-boundary';
+import React, { useState } from 'react'
 import { Grid } from '@mui/material';
 import Header from './Header';
 import Chat from './Chat';
