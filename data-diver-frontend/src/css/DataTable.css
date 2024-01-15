@@ -1,4 +1,32 @@
-.css-ptkaw2-MuiDataGrid-root .MuiDataGrid-cellContent {
-    overflow: hidden;
-    text-overflow: unset!important;
+.MuiTableContainer-root {
+    align-self: flex-start;
+    width: fit-content;
+    max-width: 100%;
+    & .table--header {
+        color: #DCDCDF;
+        background-color: #262A38;
+    };
+    & .MuiDataGrid-sortIcon {
+        opacity: 1;
+        color: white;
+    };
+    & .MuiDataGrid-menuIconButton {
+        opacity: 1;
+        color: white;
+    };
+    & .MuiDataGrid-filterIcon {
+        opacity: 1;
+        color: white;
+    };
+    & .MuiDataGrid-cellContent {
+        overflow: hidden;
+        text-overflow: unset!important;
+    };
+    & .MuiDataGrid-columnHeaders {
+        background-color: #262A38;
+    }
+    & .MuiDataGrid-columnHeaderTitle {
+        overflow: hidden;
+        text-overflow: unset!important;
+    }
 }

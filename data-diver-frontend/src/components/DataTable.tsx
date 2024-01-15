@@ -8,29 +8,9 @@ const DataTable = (props: {columns: GridColDef[], rows: GridRowsProp}) => {
     const columns = useMemo(() => {
         return props.columns.map(col => {return {...col,  headerClassName: 'table--header'}})
     }, [props.columns]);
-
-    const tableSytle = {
-        alignSelf: 'flex-start',
-        '& .table--header': {
-            color: '#DCDCDF',
-            backgroundColor: '#262A38',
-        },
-        "& .MuiDataGrid-sortIcon": {
-            opacity: 1,
-            color: "white",
-        },
-        "& .MuiDataGrid-menuIconButton": {
-            opacity: 1,
-            color: "white"
-        },
-        "& .MuiDataGrid-filterIcon": {
-            opacity: 1,
-            color: "white"
-        },
-    };
     
     return (
-        <TableContainer component={Paper} elevation={24} sx={tableSytle}>
+        <TableContainer component={Paper} elevation={24}>
             <DataGrid
                 rows={props.rows}
                 columns={columns}
