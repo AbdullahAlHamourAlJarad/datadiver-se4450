@@ -31,7 +31,7 @@ conversationRoutes.get('/answer', async (req, res, next) => {
         } else {
             let response: any = {data: answer.recordset, query: openAIResponse.query}
 
-            if(openAIResponse.interpreted_question && question !== openAIResponse.interpreted_question) {
+            if(openAIResponse.interpreted_question && question.toLowerCase() !== openAIResponse.interpreted_question.toLowerCase()) {
                 response = {...response, interpreted_question: openAIResponse.interpreted_question}
             }
 
@@ -90,7 +90,9 @@ interface ITableSchema {
  * table names, column names and their types.
  */
 const createOpenAISystemRolePrompt = (databaseSchema: ITableSchema[]): string => {
-    let prompt = "Given the following MSSQL tables, your job is to write queries given a user's request and output as JSON with 'query' attribute along with 'interpreted_question' attribute which is the same as the question asked but with any fixes if there was a typo.\n";
+    let prompt = "Given the following MSSQL tables, your job is to write queries given a user's request." +
+        "The output should be presented in JSON format, including a 'query' attribute and an 'interpreted_question' attribute." + 
+        "The 'interpreted_question' should mirror the original question but account for any typos through appropriate corrections.\n";
 
     for(let tableSchema of databaseSchema) {
         prompt += `CREATE TABLE ${tableSchema.tableName} (\n`;

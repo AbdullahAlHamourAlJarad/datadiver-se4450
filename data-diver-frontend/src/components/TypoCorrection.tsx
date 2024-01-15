@@ -12,9 +12,11 @@ const TypoCorrection = (props: {typoFix: string}) => {
     });
 
 
-    return <TypoChatLine>
-        <b>Showing results for:</b> "<i>{props.typoFix}</i>"
-    </TypoChatLine>
+    return (
+        <TypoChatLine>
+            <b>Showing results for:</b> <i>{props.typoFix}</i>
+        </TypoChatLine>
+    );
 }
 
 export default TypoCorrection;
