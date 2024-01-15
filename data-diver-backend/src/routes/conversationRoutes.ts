@@ -22,14 +22,20 @@ conversationRoutes.get('/answer', async (req, res, next) => {
 
         let openAIResponse = await makeOpenAIRequest(systemPrompt, question);
         console.log(openAIResponse.query);
+        console.log(openAIResponse.interpreted_question)
 
         let answer = await connection.request().query(openAIResponse.query);
-        console.log(answer)
 
         if(!answer.recordset) {
             res.status(404).send("No results found")
         } else {
-            res.send({data: answer.recordset, query: openAIResponse.query})
+            let response: any = {data: answer.recordset, query: openAIResponse.query}
+
+            if(openAIResponse.interpreted_question && question !== openAIResponse.interpreted_question) {
+                response = {...response, interpreted_question: openAIResponse.interpreted_question}
+            }
+
+            res.send(response)
         }
 
         connection.close();
@@ -84,7 +90,7 @@ interface ITableSchema {
  * table names, column names and their types.
  */
 const createOpenAISystemRolePrompt = (databaseSchema: ITableSchema[]): string => {
-    let prompt = "Given the following MSSQL tables, your job is to write queries given a user's request and output as JSON with 'query' attribute.\n";
+    let prompt = "Given the following MSSQL tables, your job is to write queries given a user's request and output as JSON with 'query' attribute along with 'interpreted_question' attribute which is the same as the question asked but with any fixes if there was a typo.\n";
 
     for(let tableSchema of databaseSchema) {
         prompt += `CREATE TABLE ${tableSchema.tableName} (\n`;

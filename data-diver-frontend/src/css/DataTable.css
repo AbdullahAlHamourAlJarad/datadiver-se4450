@@ -1,6 +1,6 @@
 .MuiTableContainer-root {
     align-self: flex-start;
-    width: fit-content;
+    width: max-content!important;
     max-width: 100%;
     & .table--header {
         color: #DCDCDF;

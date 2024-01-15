@@ -8,6 +8,7 @@ import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded'
 import SendRoundedIcon from '@mui/icons-material/SendRounded'
 import { GridColDef, GridRowsProp } from '@mui/x-data-grid';
 import DataTable from './DataTable';
+import TypoCorrection from './TypoCorrection';
 
 
 type ChatProps = {
@@ -47,7 +48,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
         color: '#DCDCDF',
         overflowWrap: 'break-word',
         padding: '7px'
-    })
+    });
 
     const ChatFooter = styled('div')({
         textAlign: 'center',
@@ -101,6 +102,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const [userMessage, setUserMessage] = useState('');
     const [receivedAnswerQuery, setReceivedAnswerQuery] = useState("");
+    const [receivedInterpretedQuestion, setReceivedInterpretedQuestion] = useState<string | undefined>(undefined);
     const { receivedAnswer, setReceivedAnswer } = useContext(AnswerContext); //TODO Refactor
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -124,7 +126,8 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                 setReceivedAnswer("No data available");
             }
 
-            setReceivedAnswerQuery(response.data.query)
+            setReceivedAnswerQuery(response.data.query);
+            setReceivedInterpretedQuestion(response.data.interpreted_question);
         }).catch(error => {
             console.error("Error fetching data:", error);
             setReceivedAnswer("Error Fetching Data!");
@@ -157,6 +160,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
 
             return (
                 <SystemChatBubble>
+                    {receivedInterpretedQuestion && <TypoCorrection typoFix={receivedInterpretedQuestion} />}
                     <DataTable columns={columns} rows={rows} />
                     <InspectQuery query={receivedAnswerQuery}/>
                 </SystemChatBubble>
