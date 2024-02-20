@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { AuthContext } from '../AuthProvider';
 import { useNavigate } from 'react-router-dom';
-import { Alert } from '@mui/material';
+import Error from './Error';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -11,15 +11,14 @@ const Login = () => {
 
     return (
         <div>
-            {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+            <Error errorMessage={errorMessage} setErrorMessage={setErrorMessage} />
             Login Page
             <button onClick={async () => {
                 try{ 
                     await login("", "");
                     navigate("/")
                 } catch(error) {
-                    //@ts-ignore
-                    setErrorMessage(error)
+                    setErrorMessage(error as string)
                 }
 
             }}>Login</button>
