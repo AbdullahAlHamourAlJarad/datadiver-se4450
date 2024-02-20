@@ -1,6 +1,7 @@
 import { AppBar, Box, IconButton, Toolbar, styled } from '@mui/material'
-import React from 'react'
+import React, { useContext } from 'react'
 import Logo from './Logo'
+import { AuthContext } from '../AuthProvider'
 
 type HeaderProps = {
     drawerOpen: boolean
@@ -21,13 +22,15 @@ const Header = ({drawerOpen, setDrawerOpen}: HeaderProps) => {
         }
     })
 
+    const {user} = useContext(AuthContext);
+
     return (
         <Container>
             <Toolbar>
                 <Box sx={{ width: '100%' }}>
                     <Logo />
                 </Box>
-                <DrawerButton onClick={() => setDrawerOpen((prevState: boolean) => !(prevState))}>
+                {user.isAuthenticated && <DrawerButton onClick={() => setDrawerOpen((prevState: boolean) => !(prevState))}>
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         height="30px"
@@ -36,7 +39,7 @@ const Header = ({drawerOpen, setDrawerOpen}: HeaderProps) => {
                         fill="#262A38">
                         <path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6 17h-12v-2h12v2zm0-4h-12v-2h12v2zm0-4h-12v-2h12v2z" />
                     </svg>
-                </DrawerButton>
+                </DrawerButton>}
             </Toolbar>
         </Container>
     )

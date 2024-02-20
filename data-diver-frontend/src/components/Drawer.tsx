@@ -1,5 +1,7 @@
-import { Stack, Typography, styled } from '@mui/material'
-import React, { RefObject, useState } from 'react'
+import { Button, Stack, Typography, styled } from '@mui/material'
+import React, { useContext } from 'react'
+import { Link } from 'react-router-dom'
+import { AuthContext } from '../AuthProvider'
 
 type DrawerProps = {
     dbURL: string
@@ -20,8 +22,11 @@ const DrawerBox = styled(Stack)({
 })
 
 const Drawer = ({ dbURL, dbName, dbUsername, dbPassword, setDbURL, setDbName, setDbUsername, setDbPassword }: DrawerProps) => {
+    const {logout} = useContext(AuthContext);
+    
     return (
         <DrawerBox>
+            <Button><Link to={'#'} onClick={logout}>Log out</Link></Button>
             <Typography sx={{ color: '#5A6C83' }}>
                 WIP...
             </Typography>
