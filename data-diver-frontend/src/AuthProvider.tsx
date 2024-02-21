@@ -21,7 +21,7 @@ export default function AuthProvider({ children }: Readonly<{children: ReactNode
         // Make a call to the authentication API to check the username
         return new Promise((resolve, reject) => {
             //TODO remove
-            const test = false
+            const test = true
             if (test) {
                 setUser({name: userName, isAuthenticated: true, isAdmin: false});
                 resolve("success");

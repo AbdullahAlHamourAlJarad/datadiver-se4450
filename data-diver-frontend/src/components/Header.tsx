@@ -4,13 +4,11 @@ import Logo from './Logo'
 import { AuthContext } from '../AuthProvider'
 
 type HeaderProps = {
-    drawerOpen: boolean
     setDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const Header = ({drawerOpen, setDrawerOpen}: HeaderProps) => {
+const Header = ({ setDrawerOpen }: HeaderProps) => {
     const Container = styled(AppBar)({
-        height: '10%',
         backgroundColor: '#5A6C83'
     })
 
@@ -25,7 +23,7 @@ const Header = ({drawerOpen, setDrawerOpen}: HeaderProps) => {
     const {user} = useContext(AuthContext);
 
     return (
-        <Container>
+        <Container position="static">
             <Toolbar>
                 <Box sx={{ width: '100%' }}>
                     <Logo />

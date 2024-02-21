@@ -11,8 +11,6 @@ import { AuthContext } from './AuthProvider'
 const PrivateRoute = ({ element: Component, ...rest }) => {
     const {user} = useContext(AuthContext);
 
-    console.log(user.isAuthenticated)
-
     return user.isAuthenticated ? <Component {...rest} /> : <Navigate to="/login" replace />;
 }
 
