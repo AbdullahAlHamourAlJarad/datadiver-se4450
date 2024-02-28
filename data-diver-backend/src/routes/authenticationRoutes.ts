@@ -3,37 +3,52 @@ import express from 'express';
 import { generatePasswordHash, verifyPassword } from '../utils/passwordUtil'
 import * as sql from 'mssql';
 import { createNewDBConnection } from '../connectDB';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const authenticationRoutes = express.Router();
 
-authenticationRoutes.post('/signup', async (req, res) => {
+authenticationRoutes.post('/signup', async (req, res, next) => {
   const { email, password } = req.body;
 
-  // Salt and hash the password
-  let hashedPassword = generatePasswordHash(password)
-
   try {
-    // Create a new DB connection using the provided function
-    const connection = await createNewDBConnection('datadiverserver.database.windows.net', 'DataDiverDB', 'datadiveradmin', 'ouda2023!');
+    // Create a new DB connection
+    const connection = await createNewDBConnection(
+        process.env.DB_URL as string, 
+        process.env.DB_NAME as string, 
+        process.env.DB_USER as string, 
+        process.env.DB_PASSWORD as string
+    );
 
     // Check if user already exists
     const existingUser = await connection.request()
       .input('email', sql.VarChar, email)
-      .query('SELECT * FROM [User] WHERE email = @email');
+      .query('SELECT * FROM [Users] WHERE email = @email');
 
     if (existingUser.recordset.length > 0) {
-      return res.status(409).send('Email already in use.');
+      res.status(409).send('Email already in use.');
+    } else {
+        // Salt and hash the password
+        let { hashedPass , salt } = generatePasswordHash(password)
+
+        // Insert the new user in Users table
+        await connection.request()
+            .input('email', sql.VarChar, email)
+            .query('INSERT INTO [Users] (email) VALUES (@email)');
+
+        // Insert the new user password info in PasswordHash table
+        await connection.request()
+            .input('email', sql.VarChar, email)
+            .input('passwordHash', sql.VarChar, hashedPass)
+            .input('salt', sql.VarChar, salt)
+            .query('INSERT INTO [PasswordHash] (email, passwordHash, salt) VALUES (@email, @passwordHash, @salt)');
+
+        res.status(201).send('User created successfully.');
     }
-
-    // Insert the new user
-    await connection.request()
-      .input('email', sql.VarChar, email)
-      .input('password', sql.VarChar, hashedPassword)
-      .query('INSERT INTO [User] (email, password) VALUES (@email, @password)');
-
-    res.status(201).send('User created successfully.');
   } catch (error: any) {
-    res.status(500).send(error.message);
+    console.error(error)
+    next(new Error("Failed to Create Account"))
   }
 });
 

@@ -9,7 +9,7 @@ type DataDiverProps = {
 
 function DataDiver({drawerOpen} : Readonly<DataDiverProps>) {
     const [dbURL, setDbURL] = useState('datadiverserver.database.windows.net')
-    const [dbName, setDbName] = useState('DataDiverDB')
+    const [dbName, setDbName] = useState('DemoDB')
     const [dbUsername, setDbUsername] = useState('datadiveradmin')
     const [dbPassword, setDbPassword] = useState('ouda2023!')
 

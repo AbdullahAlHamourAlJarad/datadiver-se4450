@@ -17,7 +17,7 @@ const Signup = () => {
     e.preventDefault();
   
     try { 
-      const response = await axios.post('http://localhost:8080/auth/signup', formData);
+      const response = await axios.post('/auth/signup', formData);
       console.log('Account created:', response.data);
       // Handle success, maybe redirect to the login page or display a success message
     } catch (error: any) { // Notice the use of `any` here to broadly type the error object
