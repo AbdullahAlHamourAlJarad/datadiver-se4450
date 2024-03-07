@@ -1,10 +1,10 @@
 import { randomBytes, pbkdf2Sync } from 'crypto';
 
 // Function to generate a hashed password and salt
-export function generatePasswordHash(password: string): { salt: string, hash: string } {
+export function generatePasswordHash(password: string): { salt: string, hashedPass: string } {
   const salt = randomBytes(16).toString('hex');
-  const hash = pbkdf2Sync(password, salt, 1000, 64, `sha512`).toString(`hex`);
-  return { salt, hash };
+  const hashedPass = pbkdf2Sync(password, salt, 1000, 64, `sha512`).toString(`hex`);
+  return { salt, hashedPass };
 }
 
 // Function to verify the password
