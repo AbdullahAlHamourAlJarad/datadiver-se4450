@@ -1,4 +1,4 @@
-/* Signup.module.css */
+Signup.module.css */
 .signupContainer {
     display: flex;
     justify-content: center;
@@ -61,4 +61,3 @@
   .loginLink a:hover {
     text-decoration: underline;
   }
-  
