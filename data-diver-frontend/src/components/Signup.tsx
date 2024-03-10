@@ -31,7 +31,7 @@ const Signup = () => {
   };
 
   return (
-    <Grid container justifyContent="center" alignItems="center" style={{ minHeight: '100vh', backgroundColor: '#f4f4f4' }}>
+    <Grid container justifyContent="center" alignItems="center" style={{ minHeight: '100vh', backgroundColor: '#262A38' }}>
       <Grid item xs={12} sm={6} md={4} lg={3}>
         <div className={styles.signupForm}>
           <h1 className={styles.signupTitle}>Create My Account</h1>
