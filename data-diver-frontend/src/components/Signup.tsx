@@ -1,13 +1,13 @@
+// Signup.tsx
 import React, { useState } from 'react';
 import axios from 'axios';
 import styles from '../css/Signup.module.css';
-import Grid from '@mui/material/Grid'; // Importing Grid from MUI
+import Grid from '@mui/material/Grid';
+import Error from './Error'; // Make sure the path to this component is correct
 
 const Signup = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -16,22 +16,25 @@ const Signup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
   
-    try { 
+    try {
       const response = await axios.post('/auth/signup', formData);
       console.log('Account created:', response.data);
-      // Handle success, maybe redirect to the login page or display a success message
+      // Redirect to login on successful signup
+      window.location.href = '/login';
     } catch (error: any) {
       if (axios.isAxiosError(error)) {
+        setErrorMessage(error.response?.data.message || 'An error occurred during signup.');
         console.error('Signup error:', error.response?.data);
       } else {
+        setErrorMessage('An unexpected error occurred.');
         console.error('Signup error:', error.message);
       }
-      // Handle error, possibly display an error message to the user
     }
   };
 
   return (
     <Grid container justifyContent="center" alignItems="center" style={{ minHeight: '100vh', backgroundColor: '#262A38' }}>
+      <Error errorMessage={errorMessage} setErrorMessage={setErrorMessage} />
       <Grid item xs={12} sm={6} md={4} lg={3}>
         <div className={styles.signupForm}>
           <h1 className={styles.signupTitle}>Create My Account</h1>
