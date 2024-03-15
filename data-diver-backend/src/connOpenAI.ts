@@ -35,14 +35,18 @@ export async function makeRequest() {
   }
 }
 
-export async function makeOpenAIRequest(systemPrompt: string, userPrompt: string): Promise<any> {
+export async function makeOpenAIRequest(systemPrompt: string, userPrompt: string, prevUserMessages: string[], prevSystemMessages: string[]): Promise<any> {
+  let messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [{role: "system", content: systemPrompt}]
+  for(let u = 0, s = 0; u < prevUserMessages.length && s < prevSystemMessages.length; u++, s++) {
+    messages.push({role: "user", content: prevUserMessages[u]});
+    messages.push({role: "assistant", content: prevSystemMessages[s]});
+  }
+  messages.push({role: "user", content: userPrompt})
+
   try {
     let response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo-1106",
-      messages: [
-        {role: "system", content: systemPrompt},
-        {role: "user", content: userPrompt}
-      ],
+      messages: messages,
       max_tokens: 250,
       response_format: { type: "json_object" },
     });

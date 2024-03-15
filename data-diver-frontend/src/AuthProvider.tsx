@@ -1,21 +1,21 @@
 import React, { ReactNode, useState } from 'react'
 
-type IUser = {name: string, isAuthenticated: boolean, isAdmin: boolean}
+type IUser = {email: string, isAuthenticated: boolean, isAdmin: boolean}
 
 interface IAuthContext {
     user: IUser,
-    login: (userName: string, password: string) => Promise<unknown>
+    login: (email: string, password: string) => Promise<unknown>
     logout: () => void
 }
 
 export const AuthContext = React.createContext<IAuthContext>({
-    user: {name: "", isAuthenticated: false, isAdmin: false},
-    login: (userName, password) => new Promise(() => {}),
+    user: {email: "", isAuthenticated: false, isAdmin: false},
+    login: (email, password) => new Promise(() => {}),
     logout: () => {}
 });
 
 export default function AuthProvider({ children }: Readonly<{children: ReactNode}>) {
-    const [user, setUser] = useState<IUser>({name: "", isAuthenticated: false, isAdmin: false});
+    const [user, setUser] = useState<IUser>({email: "", isAuthenticated: false, isAdmin: false});
 
     const login = (userName: string, password: string) => {
         // Make a call to the authentication API to check the username
@@ -23,7 +23,7 @@ export default function AuthProvider({ children }: Readonly<{children: ReactNode
             //TODO remove
             const test = true
             if (test) {
-                setUser({name: userName, isAuthenticated: true, isAdmin: false});
+                setUser({email: userName, isAuthenticated: true, isAdmin: false});
                 resolve("success");
             } else {
                 reject("Incorrect Password")

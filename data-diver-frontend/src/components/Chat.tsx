@@ -103,7 +103,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
     const [userMessage, setUserMessage] = useState('');
     const [receivedAnswerQuery, setReceivedAnswerQuery] = useState("");
     const [receivedInterpretedQuestion, setReceivedInterpretedQuestion] = useState<string | undefined>(undefined);
-    const { receivedAnswer, setReceivedAnswer } = useContext(AnswerContext); //TODO Refactor
+    const [ receivedAnswer, setReceivedAnswer ] = useState<any | null>(null); //TODO Refactor
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -120,6 +120,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                 question: textField.value,
             }
         }).then((response) => {
+            console.log(response.data)
             if (response.data.data.length > 0) {
                 setReceivedAnswer(response.data.data);
             } else {
@@ -131,6 +132,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
         }).catch(error => {
             console.error("Error fetching data:", error);
             setReceivedAnswer("Error Fetching Data!");
+            setReceivedAnswerQuery("Error Fetching Data");
         }).finally(() => {
             textField.value = ''
             textField.blur()
