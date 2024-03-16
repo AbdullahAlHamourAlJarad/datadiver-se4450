@@ -34,9 +34,9 @@ const Signup = () => {
 
   return (
     <Grid container justifyContent="center" alignItems="center" style={{ minHeight: '100vh', backgroundColor: '#262A38' }}>
-      <Error errorMessage={errorMessage} setErrorMessage={setErrorMessage} />
       <Grid item xs={12} sm={6} md={4} lg={3}>
         <div className={styles.signupForm}>
+        <Error className={styles.errorContainer} errorMessage={errorMessage} setErrorMessage={setErrorMessage} />
           <h1 className={styles.signupTitle}>Create My Account</h1>
           <form onSubmit={handleSubmit}>
             <div className={styles.formGroup}>
