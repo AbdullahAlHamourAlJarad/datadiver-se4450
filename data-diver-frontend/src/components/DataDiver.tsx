@@ -21,11 +21,11 @@ function DataDiver({drawerOpen} : Readonly<DataDiverProps>) {
             <Grid item sx={{ height: '90vh' }} xs={2}>
                 <Conversations setErrorMessage={setErrorMessage}/>
             </Grid>
-            <Grid item sx={{ height: '90vh' }} xs={drawerOpen ? 7 : 10}>
+            <Grid item xs={drawerOpen ? 7 : 10}>
                 <Error errorMessage={errorMesssage} setErrorMessage={setErrorMessage}/>
                 <Chat dbURL={dbURL} dbName={dbName} dbUsername={dbUsername} dbPassword={dbPassword} />
             </Grid>
-            <Grid item sx={{ height: '90vh' }} xs={3} hidden={!drawerOpen}>
+            <Grid item xs={3} hidden={!drawerOpen}>
                 <Drawer dbURL={dbURL} dbName={dbName} dbUsername={dbUsername} dbPassword={dbPassword} setDbURL={setDbURL} setDbName={setDbName} setDbUsername={setDbUsername} setDbPassword={setDbPassword}/>
             </Grid>
         </>
