@@ -228,7 +228,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                 target!.scroll({ top: target!.scrollHeight });
           });
         }
-      })
+    })
 
     return (
         <Grid container>
