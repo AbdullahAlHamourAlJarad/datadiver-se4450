@@ -11,10 +11,20 @@ const conversationRoutes = express.Router();
 
 export interface IServerResponse {
     message?: string,
-    data: { [key: string]: any },
+    data?: { [key: string]: any },
     interpreted_question?: string,
     query: string,
-    messageId: number
+    messageId: number, 
+    hasData: boolean
+}
+
+export type IMessage = {
+    messageID: number,
+    chatString: string,
+    timestamp: Date,
+    rating: boolean | null,
+    isUserMessage: boolean,
+    conversationID: number
 }
 
 conversationRoutes.get('/conversations', async (req, res, next) => {
@@ -126,7 +136,7 @@ conversationRoutes.get('/answer', async (req, res, next) => {
         if(!answer.recordset || answer.recordset.length === 0) {
             res.status(404).send({message: "No results found", query: openAIResponse.query, messageId: answerMessage.recordset[0].ID})
         } else {
-            let response: IServerResponse = {data: answer.recordset, query: openAIResponse.query, messageId: answerMessage.recordset[0].ID}
+            let response: IServerResponse = {data: answer.recordset, query: openAIResponse.query, messageId: answerMessage.recordset[0].ID, hasData: true}
 
             if(openAIResponse.interpreted_question && question.toLowerCase() !== openAIResponse.interpreted_question.toLowerCase()) {
                 response = {...response, interpreted_question: openAIResponse.interpreted_question}
@@ -156,11 +166,18 @@ conversationRoutes.get('/messages', async (req, res, next) => {
         //Get list of messages by conversation ID
         let messageList = await connection.request()
             .input('conversationID', sql.Int, conversationID)
-            .query('SELECT * FROM [Messages] WHERE conversationID = @conversationID ORDER BY timestamp DESC');
+            .query('SELECT * FROM [Messages] WHERE conversationID = @conversationID ORDER BY timestamp');
 
         let userMessages = messageList.recordset.filter(msg => msg.isUserMessage).map(msg => msg.chatString);
-        let systemMessages = messageList.recordset.filter(msg => !msg.isUserMessage).map(msg => msg.chatString);
-        
+        let systemMessages: IServerResponse[] = (messageList.recordset.filter(msg => !msg.isUserMessage) as IMessage[]).map(msg => {
+            return {
+                messageId: msg.messageID,
+                query: msg.chatString,
+                hasData: true
+            }
+        });
+
+
         res.send({userMessages: userMessages, systemMessages: systemMessages});
         connection.close();
     } catch (error: any) {

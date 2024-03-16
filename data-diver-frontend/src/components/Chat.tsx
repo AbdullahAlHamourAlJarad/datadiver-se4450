@@ -1,5 +1,5 @@
 import { Grid, IconButton, Paper, Stack, TextField, Typography, styled } from '@mui/material';
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { ConversationContext, IServerResponse } from '../Provider'
 import axios from 'axios'
 import Typing from './Typing'
@@ -100,17 +100,21 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
     });
 
     const [isLoading, setIsLoading] = useState(false);
-    const {isChatLoading, currentConversationId} = useContext(ConversationContext);
-    const [userMessage, setUserMessage] = useState('');
-    
-    const [ receivedAnswer, setReceivedAnswer ] = useState<IServerResponse | null>(null);
+    const {userMessagesList, setUserMessagesList, systemMessagesList, setSystemMessagesList, isChatLoading, currentConversationId} = useContext(ConversationContext);
+    const chatContainerRef = useRef<HTMLInputElement>(null);
+
     const [ error, setError ] = useState<string | null>(null);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const textField = e.currentTarget.querySelector('input') as HTMLInputElement;
-        setUserMessage(textField.value)
+        setUserMessagesList(prev => {
+            let temp = prev;
+            temp.push(textField.value);
+            return temp;
+        });
         setIsLoading(true)
+        setError(null)
 
         axios.get("/conversation/answer", {
             params: {
@@ -124,15 +128,22 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
         }).then((response) => {
             console.log("Response", response)
             let serverResponse: IServerResponse = response.data;
-            setReceivedAnswer(serverResponse);
+            setSystemMessagesList(prev => {
+                let temp = prev;
+                temp.push(serverResponse);
+                return temp;
+            });
         }).catch(error => {
             console.log(error.response.data)
             if(error.response.data.query) {
-                setReceivedAnswer(error.response.data);
+                setSystemMessagesList(prev => {
+                    let temp = prev;
+                    temp.push(error.response.data);
+                    return temp;
+                });
             } else {
                 console.error("Error fetching data:", error);
                 setError("Error Fetching Data!");
-                setReceivedAnswer(null);
             }
         }).finally(() => {
             textField.value = ''
@@ -145,8 +156,8 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
         console.log("Retry")
     }
 
-    const renderSystemChat = () => {
-        if (isLoading) {
+    const renderSystemChat = (i: number) => {
+        if (i === systemMessagesList.length && isLoading) {
             return (
                 <SystemChatBubble>
                     <ChatLine>
@@ -154,24 +165,24 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                     </ChatLine>
                 </SystemChatBubble>
             );
-        } else if (receivedAnswer) {
+        } else if (systemMessagesList[i]) {
             let columns: GridColDef[];
             let rows: GridRowsProp;
 
-            if(receivedAnswer.data && receivedAnswer.data.length > 0) {
-                columns = Object.keys(receivedAnswer.data![0])
+            if(systemMessagesList[i].data && systemMessagesList[i].data!.length > 0) {
+                columns = Object.keys(systemMessagesList[i].data![0])
                     .map(col => {return {field: col, headerName: col }});
-                rows = receivedAnswer.data!.map((row: any, index: number) => {
+                rows = systemMessagesList[i].data!.map((row: any, index: number) => {
                     return {...row, id: index}
                 });
             }
 
             return (
                 <SystemChatBubble>
-                    {receivedAnswer.interpreted_question && <TypoCorrection typoFix={receivedAnswer.interpreted_question} />}
-                    {receivedAnswer.message}
-                    {receivedAnswer.data && receivedAnswer.data.length > 0 && <DataTable columns={columns!} rows={rows!} />}
-                    {receivedAnswer.query && <InspectQuery query={receivedAnswer.query}/>}
+                    {systemMessagesList[i].interpreted_question && <TypoCorrection typoFix={systemMessagesList[i].interpreted_question!} />}
+                    {systemMessagesList[i].message}
+                    {systemMessagesList[i].data && systemMessagesList[i].data!.length > 0 && <DataTable columns={columns!} rows={rows!} />}
+                    {systemMessagesList[i].query && <InspectQuery query={systemMessagesList[i].query}/>}
                 </SystemChatBubble>
             );
         } else if(error) {
@@ -184,21 +195,46 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
             );
 
         }
-
     }
+
+    const renderChat = () => {
+        let chat = [];
+        
+        for(let i = 0; i < userMessagesList.length; i++) {
+            chat.push(
+                <>
+                    {userMessagesList[i] !== '' &&
+                        <UserChatBubble>
+                            <ChatLine>
+                                {userMessagesList[i]}
+                            </ChatLine>
+                        </UserChatBubble>
+                    }
+                    {renderSystemChat(i)}   
+                </>
+            )
+        }
+
+        return chat;
+    }
+
+
+    //scroll to bottom when new messages are added
+    useEffect(() => {
+        if (chatContainerRef) {
+            chatContainerRef.current!.addEventListener('DOMNodeInserted', event => {
+                const { currentTarget: target } = event;
+                //@ts-ignore
+                target!.scroll({ top: target!.scrollHeight });
+          });
+        }
+      })
 
     return (
         <Grid container>
             <Grid item xs={12} sx={{ height: '75vh' }}>
-                <ChatBox>
-                    {userMessage !== '' &&
-                        <UserChatBubble>
-                            <ChatLine>
-                                {userMessage}
-                            </ChatLine>
-                        </UserChatBubble>
-                    }
-                    {renderSystemChat()}
+                <ChatBox ref={chatContainerRef}>
+                    {renderChat()}
                 </ChatBox>
             </Grid>
 

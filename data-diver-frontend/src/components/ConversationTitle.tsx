@@ -9,13 +9,6 @@ export type IConversationTitle = {
     setErrorMessage: (error: string) => void
 }
 
-export type IMessage = {
-    messageId: number,
-    chatString: string,
-    rating: boolean,
-    isUserMessage: boolean
-}
-
 
 const ConversationTitle = ({title, conversationId, setErrorMessage}: IConversationTitle) => {
     const [hovered, setHovered] = useState(false);
