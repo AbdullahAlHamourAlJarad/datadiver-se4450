@@ -1,4 +1,7 @@
 import * as sql from 'mssql';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Configuring the connection pool example
 async function connectToDatabase(serverUrl: string, database: string, dbUserName: string, dbPassword: string) {
@@ -52,6 +55,15 @@ export async function createNewDBConnection(serverUrl: string, database: string,
     else 
       throw new Error("Failed to retrieve information from the given database")
   }
+}
+
+export async function createDataDiverDBConnection() {
+  return createNewDBConnection(
+    process.env.DB_URL as string, 
+    process.env.DB_NAME as string, 
+    process.env.DB_USER as string, 
+    process.env.DB_PASSWORD as string
+  );
 }
 
 // Connect to the database example

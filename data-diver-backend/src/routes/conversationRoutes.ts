@@ -1,5 +1,5 @@
 import express from 'express';
-import { createNewDBConnection } from '../connectDB';
+import { createNewDBConnection, createDataDiverDBConnection } from '../connectDB';
 import { IRecordSet } from 'mssql';
 import { makeOpenAIRequest } from '../connOpenAI';
 import * as sql from 'mssql';
@@ -9,17 +9,20 @@ dotenv.config();
 
 const conversationRoutes = express.Router();
 
+export interface IServerResponse {
+    message?: string,
+    data: { [key: string]: any },
+    interpreted_question?: string,
+    query: string,
+    messageId: number
+}
+
 conversationRoutes.get('/conversations', async (req, res, next) => {
     const email = req.query.email as string;
 
     try {
         // Create a new DB connection
-        const connection = await createNewDBConnection(
-            process.env.DB_URL as string, 
-            process.env.DB_NAME as string, 
-            process.env.DB_USER as string, 
-            process.env.DB_PASSWORD as string
-        );
+        const connection = await createDataDiverDBConnection();
        
         //Get list of conversations by email
         let conversationList = await retrieveConversationList(connection, email);
@@ -31,19 +34,14 @@ conversationRoutes.get('/conversations', async (req, res, next) => {
         next(new Error("Failed to Create New Conversation"))
     }
 
-})
+});
 
 conversationRoutes.post('/new-conversation', async (req, res, next) => {
     const { email, title } = req.body;
 
     try {
         // Create a new DB connection
-        const connection = await createNewDBConnection(
-            process.env.DB_URL as string, 
-            process.env.DB_NAME as string, 
-            process.env.DB_USER as string, 
-            process.env.DB_PASSWORD as string
-        );
+        const connection = await createDataDiverDBConnection();
        
         //Insert new convesation into DB
         await connection.request()
@@ -84,8 +82,7 @@ conversationRoutes.get('/answer', async (req, res, next) => {
     try {
         const clientDBConn = await createNewDBConnection(dbURL, dbName, dbUserName, dbPass);
         // Create a new DB connection to datadiver DB
-        const dataDiverDBConn = await createNewDBConnection(process.env.DB_URL as string, process.env.DB_NAME as string, 
-            process.env.DB_USER as string, process.env.DB_PASSWORD as string);
+        const dataDiverDBConn = await createDataDiverDBConnection();
 
         //Get schema of client database
         let result = await clientDBConn.request().query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS");
@@ -112,24 +109,24 @@ conversationRoutes.get('/answer', async (req, res, next) => {
         // Insert user question to messages
         await dataDiverDBConn.request()
             .input('conversationID', sql.VarChar, conversationId)
-            .input('chatToString', sql.NVarChar, question)
+            .input('chatString', sql.NVarChar, question)
             .input('isUserMessage', sql.Bit, 1)
             .input('timestamp', sql.DateTime, new Date())
-            .query('INSERT INTO [Messages] (conversationID, chatToString, isUserMessage, timestamp) VALUES (@conversationID, @chatToString, @isUserMessage, @timestamp)');
-        
+            .query('INSERT INTO [Messages] (conversationID, chatString, isUserMessage, timestamp) VALUES (@conversationID, @chatString, @isUserMessage, @timestamp)');
+
         // Insert system answer to messages
-        await dataDiverDBConn.request()
+        const answerMessage = await dataDiverDBConn.request()
             .input('conversationID', sql.VarChar, conversationId)
-            .input('chatToString', sql.NVarChar, openAIResponse.query)
-            .input('To_From', sql.VarChar, 0)
+            .input('chatString', sql.NVarChar, openAIResponse.query)
+            .input('isUserMessage', sql.Bit, 0)
             .input('timestamp', sql.DateTime, new Date())
-            .query('INSERT INTO [Messages] (conversationID, chatToString, isUserMessage, timestamp) VALUES (@conversationID, @chatToString, @isUserMessage, @timestamp)');
-        
-        // return response to user
-        if(!answer.recordset) {
-            res.status(404).send("No results found")
+            .query('INSERT INTO [Messages] (conversationID, chatString, isUserMessage, timestamp) VALUES (@conversationID, @chatString, @isUserMessage, @timestamp);SELECT @@IDENTITY AS ID;')
+
+            // return response to user
+        if(!answer.recordset || answer.recordset.length === 0) {
+            res.status(404).send({message: "No results found", query: openAIResponse.query, messageId: answerMessage.recordset[0].ID})
         } else {
-            let response: any = {data: answer.recordset, query: openAIResponse.query}
+            let response: IServerResponse = {data: answer.recordset, query: openAIResponse.query, messageId: answerMessage.recordset[0].ID}
 
             if(openAIResponse.interpreted_question && question.toLowerCase() !== openAIResponse.interpreted_question.toLowerCase()) {
                 response = {...response, interpreted_question: openAIResponse.interpreted_question}
@@ -147,6 +144,30 @@ conversationRoutes.get('/answer', async (req, res, next) => {
         else 
             next(new Error("Failed to retrieve information from the given database"))
     }
+});
+
+conversationRoutes.get('/messages', async (req, res, next) => {
+    const conversationID = req.query.conversationId as string;
+
+    try {
+        // Create a new DB connection
+        const connection = await createDataDiverDBConnection();
+       
+        //Get list of messages by conversation ID
+        let messageList = await connection.request()
+            .input('conversationID', sql.Int, conversationID)
+            .query('SELECT * FROM [Messages] WHERE conversationID = @conversationID ORDER BY timestamp DESC');
+
+        let userMessages = messageList.recordset.filter(msg => msg.isUserMessage).map(msg => msg.chatString);
+        let systemMessages = messageList.recordset.filter(msg => !msg.isUserMessage).map(msg => msg.chatString);
+        
+        res.send({userMessages: userMessages, systemMessages: systemMessages});
+        connection.close();
+    } catch (error: any) {
+        console.error(error)
+        next(new Error("Failed to Create New Conversation"))
+    }
+
 });
 
 

@@ -6,6 +6,7 @@ import { AuthContext } from '../AuthProvider'
 import Error from './Error';
 
 type ConversationProps = {
+    setErrorMessage: (error: string) => void
 }
 
 const DrawerBox = styled(Stack)({
@@ -14,13 +15,13 @@ const DrawerBox = styled(Stack)({
     height: '100%'
 })
 
-const Conversations = ({ }: ConversationProps) => {
+const Conversations = ({ setErrorMessage }: ConversationProps) => {
     const {user} = useContext(AuthContext);
     const newConversationTitleRef = useRef<HTMLInputElement>(null);
     const [ conversationList, setConversationList ] = useState<IConversationTitle[]>([])
 
     const [ isLoading, setIsLoading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<null | string>(null);
+    const [conversationListErrorMessage, setConversationListErrorMessage] = useState<null | string>(null);
 
     const handleAddConversation = async () => {
         const newTitle = newConversationTitleRef.current?.value;
@@ -44,7 +45,7 @@ const Conversations = ({ }: ConversationProps) => {
                     }
                 }).catch(error => {
                     console.error("Error:", error);
-                    setErrorMessage("Error Creating New Chat");
+                    setConversationListErrorMessage("Error Creating New Chat");
                 }).finally(() => {
                     setIsLoading(false);
                 });
@@ -65,7 +66,7 @@ const Conversations = ({ }: ConversationProps) => {
             })
             .catch(error => {
                 console.error("Error:", error);
-                setErrorMessage("Failed To Retrieve Chats");
+                setConversationListErrorMessage("Failed To Retrieve Chats");
             })
             .finally(() => {
                 setIsLoading(false);
@@ -74,7 +75,7 @@ const Conversations = ({ }: ConversationProps) => {
 
     return (
         <DrawerBox>
-            <Error errorMessage={errorMessage} setErrorMessage={setErrorMessage} />
+            <Error errorMessage={conversationListErrorMessage} setErrorMessage={setConversationListErrorMessage} />
 
             <div style={{ padding: "5px"}}>
                 <input 
@@ -85,7 +86,7 @@ const Conversations = ({ }: ConversationProps) => {
                 <button onClick={handleAddConversation} disabled={isLoading}>Add Chat</button>
             </div>
 
-            {conversationList.map(conv => <ConversationTitle key={conv.conversationId} title={conv.title} conversationId={conv.conversationId}/> )}
+            {conversationList.map(conv => <ConversationTitle key={conv.conversationId} title={conv.title} conversationId={conv.conversationId} setErrorMessage={setErrorMessage}/> )}
         </DrawerBox>
     )
 }

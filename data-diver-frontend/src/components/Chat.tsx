@@ -1,6 +1,6 @@
 import { Grid, IconButton, Paper, Stack, TextField, Typography, styled } from '@mui/material';
 import React, { useContext, useState } from 'react'
-import { AnswerContext } from '../Provider'
+import { ConversationContext, IServerResponse } from '../Provider'
 import axios from 'axios'
 import Typing from './Typing'
 import InspectQuery from './InspectQuery';
@@ -100,10 +100,11 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
     });
 
     const [isLoading, setIsLoading] = useState(false);
+    const {isChatLoading, currentConversationId} = useContext(ConversationContext);
     const [userMessage, setUserMessage] = useState('');
-    const [receivedAnswerQuery, setReceivedAnswerQuery] = useState("");
-    const [receivedInterpretedQuestion, setReceivedInterpretedQuestion] = useState<string | undefined>(undefined);
-    const [ receivedAnswer, setReceivedAnswer ] = useState<any | null>(null); //TODO Refactor
+    
+    const [ receivedAnswer, setReceivedAnswer ] = useState<IServerResponse | null>(null);
+    const [ error, setError ] = useState<string | null>(null);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -118,21 +119,21 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                 dbUserName: dbUsername,
                 dbPass: dbPassword,
                 question: textField.value,
+                conversationId: currentConversationId,
             }
         }).then((response) => {
-            console.log(response.data)
-            if (response.data.data.length > 0) {
-                setReceivedAnswer(response.data.data);
-            } else {
-                setReceivedAnswer("No data available");
-            }
-
-            setReceivedAnswerQuery(response.data.query);
-            setReceivedInterpretedQuestion(response.data.interpreted_question);
+            console.log("Response", response)
+            let serverResponse: IServerResponse = response.data;
+            setReceivedAnswer(serverResponse);
         }).catch(error => {
-            console.error("Error fetching data:", error);
-            setReceivedAnswer("Error Fetching Data!");
-            setReceivedAnswerQuery("Error Fetching Data");
+            console.log(error.response.data)
+            if(error.response.data.query) {
+                setReceivedAnswer(error.response.data);
+            } else {
+                console.error("Error fetching data:", error);
+                setError("Error Fetching Data!");
+                setReceivedAnswer(null);
+            }
         }).finally(() => {
             textField.value = ''
             textField.blur()
@@ -153,26 +154,31 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                     </ChatLine>
                 </SystemChatBubble>
             );
-        } else if (receivedAnswer && typeof(receivedAnswer) !== "string") {
-            const columns: GridColDef[] = Object.keys(receivedAnswer[0])
-                .map(col => {return {field: col, headerName: col }});
-            const rows: GridRowsProp = receivedAnswer.map((row: any, index: number) => {
-                return {...row, id: index}
-            });
+        } else if (receivedAnswer) {
+            let columns: GridColDef[];
+            let rows: GridRowsProp;
+
+            if(receivedAnswer.data && receivedAnswer.data.length > 0) {
+                columns = Object.keys(receivedAnswer.data![0])
+                    .map(col => {return {field: col, headerName: col }});
+                rows = receivedAnswer.data!.map((row: any, index: number) => {
+                    return {...row, id: index}
+                });
+            }
 
             return (
                 <SystemChatBubble>
-                    {receivedInterpretedQuestion && <TypoCorrection typoFix={receivedInterpretedQuestion} />}
-                    <DataTable columns={columns} rows={rows} />
-                    <InspectQuery query={receivedAnswerQuery}/>
+                    {receivedAnswer.interpreted_question && <TypoCorrection typoFix={receivedAnswer.interpreted_question} />}
+                    {receivedAnswer.message}
+                    {receivedAnswer.data && receivedAnswer.data.length > 0 && <DataTable columns={columns!} rows={rows!} />}
+                    {receivedAnswer.query && <InspectQuery query={receivedAnswer.query}/>}
                 </SystemChatBubble>
             );
-        } else if(receivedAnswer && typeof(receivedAnswer) === "string") {
+        } else if(error) {
             return (
                 <SystemChatBubble>
                     <ChatLine>
-                        {receivedAnswer}
-                        <InspectQuery query={receivedAnswerQuery}/>
+                        {error}
                     </ChatLine>
                 </SystemChatBubble>
             );
@@ -202,8 +208,8 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                         <ChatButton onClick={handleRetry}>
                             <ReplayRoundedIcon fontSize='large' htmlColor='#5A6C83'/>
                         </ChatButton>
-                        <UserInput disabled={isLoading} placeholder='Ask DataDiver a question...' />
-                        <ChatButton type='submit' disabled={isLoading}>
+                        <UserInput disabled={isLoading || isChatLoading || !currentConversationId} placeholder='Ask DataDiver a question...' />
+                        <ChatButton type='submit' disabled={isLoading || isChatLoading || !currentConversationId}>
                             <SendRoundedIcon fontSize='large' htmlColor='#5A6C83'/>
                         </ChatButton>
                     </form>
