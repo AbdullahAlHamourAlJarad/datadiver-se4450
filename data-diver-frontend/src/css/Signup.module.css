@@ -72,3 +72,8 @@
   text-decoration: underline;
   color: #DCDCDF; /* Text color for hover state to match the data grid headers */
 }
+
+.errorContainer {
+  width: 100%; /* Full width */
+  margin-bottom: 1em; /* Space below the error message */
+}
