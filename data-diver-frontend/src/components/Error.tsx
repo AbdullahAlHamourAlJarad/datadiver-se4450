@@ -1,15 +1,21 @@
 import { Alert } from '@mui/material';
 import React, { Dispatch, SetStateAction } from 'react';
 
-const Error: React.FC<{
-    errorMessage: null | string, 
-    setErrorMessage: Dispatch<SetStateAction<string | null>>
-}> = ({errorMessage, setErrorMessage}) => {
+// Updated type definition to include className
+type ErrorProps = {
+    errorMessage: null | string;
+    setErrorMessage: Dispatch<SetStateAction<string | null>>;
+    className?: string; // Optional className prop
+};
 
+const Error: React.FC<ErrorProps> = ({ errorMessage, setErrorMessage, className }) => {
     return (
         <>
             {errorMessage && 
-                <Alert severity="error" onClose={() => {setErrorMessage(null)}}>{errorMessage}</Alert>
+                // Apply the className prop to the Alert component
+                <Alert className={className} severity="error" onClose={() => {setErrorMessage(null)}}>
+                    {errorMessage}
+                </Alert>
             }
         </>
     );
