@@ -1,6 +1,6 @@
 import { Grid, IconButton, Paper, Stack, TextField, Typography, styled } from '@mui/material';
-import React, { useContext, useState } from 'react'
-import { AnswerContext } from '../Provider'
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import { ConversationContext, IServerResponse } from '../Provider'
 import axios from 'axios'
 import Typing from './Typing'
 import InspectQuery from './InspectQuery';
@@ -97,16 +97,21 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
     });
 
     const [isLoading, setIsLoading] = useState(false);
-    const [userMessage, setUserMessage] = useState('');
-    const [receivedAnswerQuery, setReceivedAnswerQuery] = useState("");
-    const [receivedInterpretedQuestion, setReceivedInterpretedQuestion] = useState<string | undefined>(undefined);
-    const { receivedAnswer, setReceivedAnswer } = useContext(AnswerContext); //TODO Refactor
+    const {userMessagesList, setUserMessagesList, systemMessagesList, setSystemMessagesList, isChatLoading, currentConversationId} = useContext(ConversationContext);
+    const chatContainerRef = useRef<HTMLInputElement>(null);
+
+    const [ error, setError ] = useState<string | null>(null);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const textField = e.currentTarget.querySelector('input') as HTMLInputElement;
-        setUserMessage(textField.value)
+        setUserMessagesList(prev => {
+            let temp = prev;
+            temp.push(textField.value);
+            return temp;
+        });
         setIsLoading(true)
+        setError(null)
 
         axios.get("/conversation/answer", {
             params: {
@@ -115,19 +120,28 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                 dbUserName: dbUsername,
                 dbPass: dbPassword,
                 question: textField.value,
+                conversationId: currentConversationId,
             }
         }).then((response) => {
-            if (response.data.data.length > 0) {
-                setReceivedAnswer(response.data.data);
-            } else {
-                setReceivedAnswer("No data available");
-            }
-
-            setReceivedAnswerQuery(response.data.query);
-            setReceivedInterpretedQuestion(response.data.interpreted_question);
+            console.log("Response", response)
+            let serverResponse: IServerResponse = response.data;
+            setSystemMessagesList(prev => {
+                let temp = prev;
+                temp.push(serverResponse);
+                return temp;
+            });
         }).catch(error => {
-            console.error("Error fetching data:", error);
-            setReceivedAnswer("Error Fetching Data!");
+            console.log(error.response.data)
+            if(error.response.data.query) {
+                setSystemMessagesList(prev => {
+                    let temp = prev;
+                    temp.push(error.response.data);
+                    return temp;
+                });
+            } else {
+                console.error("Error fetching data:", error);
+                setError("Error Fetching Data!");
+            }
         }).finally(() => {
             textField.value = ''
             textField.blur()
@@ -139,8 +153,8 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
         console.log("Retry")
     }
 
-    const renderSystemChat = () => {
-        if (isLoading) {
+    const renderSystemChat = (i: number) => {
+        if (i === systemMessagesList.length && isLoading) {
             return (
                 <SystemChatBubble>
                     <ChatLine>
@@ -148,46 +162,76 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                     </ChatLine>
                 </SystemChatBubble>
             );
-        } else if (receivedAnswer && typeof(receivedAnswer) !== "string") {
-            const columns: GridColDef[] = Object.keys(receivedAnswer[0])
-                .map(col => {return {field: col, headerName: col }});
-            const rows: GridRowsProp = receivedAnswer.map((row: any, index: number) => {
-                return {...row, id: index}
-            });
+        } else if (systemMessagesList[i]) {
+            let columns: GridColDef[];
+            let rows: GridRowsProp;
+
+            if(systemMessagesList[i].data && systemMessagesList[i].data!.length > 0) {
+                columns = Object.keys(systemMessagesList[i].data![0])
+                    .map(col => {return {field: col, headerName: col }});
+                rows = systemMessagesList[i].data!.map((row: any, index: number) => {
+                    return {...row, id: index}
+                });
+            }
 
             return (
                 <SystemChatBubble>
-                    {receivedInterpretedQuestion && <TypoCorrection typoFix={receivedInterpretedQuestion} />}
-                    <DataTable columns={columns} rows={rows} />
-                    <InspectQuery query={receivedAnswerQuery}/>
+                    {systemMessagesList[i].interpreted_question && <TypoCorrection typoFix={systemMessagesList[i].interpreted_question!} />}
+                    {systemMessagesList[i].message}
+                    {systemMessagesList[i].data && systemMessagesList[i].data!.length > 0 && <DataTable columns={columns!} rows={rows!} />}
+                    {systemMessagesList[i].query && <InspectQuery query={systemMessagesList[i].query}/>}
                 </SystemChatBubble>
             );
-        } else if(receivedAnswer && typeof(receivedAnswer) === "string") {
+        } else if(error) {
             return (
                 <SystemChatBubble>
                     <ChatLine>
-                        {receivedAnswer}
-                        <InspectQuery query={receivedAnswerQuery}/>
+                        {error}
                     </ChatLine>
                 </SystemChatBubble>
             );
 
         }
-
     }
+
+    const renderChat = () => {
+        let chat = [];
+        
+        for(let i = 0; i < userMessagesList.length; i++) {
+            chat.push(
+                <>
+                    {userMessagesList[i] !== '' &&
+                        <UserChatBubble>
+                            <ChatLine>
+                                {userMessagesList[i]}
+                            </ChatLine>
+                        </UserChatBubble>
+                    }
+                    {renderSystemChat(i)}   
+                </>
+            )
+        }
+
+        return chat;
+    }
+
+
+    //scroll to bottom when new messages are added
+    useEffect(() => {
+        if (chatContainerRef) {
+            chatContainerRef.current!.addEventListener('DOMNodeInserted', event => {
+                const { currentTarget: target } = event;
+                //@ts-ignore
+                target!.scroll({ top: target!.scrollHeight });
+          });
+        }
+    })
 
     return (
         <Grid container>
             <Grid item xs={12} sx={{ height: '74.2vh' }}>
-                <ChatBox>
-                    {userMessage !== '' &&
-                        <UserChatBubble>
-                            <ChatLine>
-                                {userMessage}
-                            </ChatLine>
-                        </UserChatBubble>
-                    }
-                    {renderSystemChat()}
+                <ChatBox ref={chatContainerRef}>
+                    {renderChat()}
                 </ChatBox>
             </Grid>
 
@@ -197,8 +241,8 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                         <ChatButton onClick={handleRetry}>
                             <ReplayRoundedIcon fontSize='large' htmlColor='#DCDCDF'/>
                         </ChatButton>
-                        <UserInput disabled={isLoading} placeholder='Ask DataDiver a question...' />
-                        <ChatButton type='submit' disabled={isLoading}>
+                        <UserInput disabled={isLoading || isChatLoading || !currentConversationId} placeholder='Ask DataDiver a question...' />
+                        <ChatButton type='submit' disabled={isLoading || isChatLoading || !currentConversationId}>
                             <SendRoundedIcon fontSize='large' htmlColor='#DCDCDF'/>
                         </ChatButton>
                     </form>
