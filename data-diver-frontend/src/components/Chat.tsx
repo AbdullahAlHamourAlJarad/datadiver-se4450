@@ -20,7 +20,7 @@ type ChatProps = {
 
 const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
     const ChatBox = styled(Stack)({
-        backgroundColor: '#262A38',
+        backgroundColor: '#161616',
         height: '100%',
         alignItems: 'center',
         overflowY: 'scroll',
@@ -28,7 +28,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
 
     const UserChatBubble = styled(Paper)({
         maxWidth: '50%',
-        backgroundColor: '#5A6C83',
+        backgroundColor: '#262626',
         marginTop: '15px',
         marginLeft: 'auto',
         marginRight: '15px'
@@ -36,7 +36,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
 
     const SystemChatBubble = styled(Paper)({
         maxWidth: '50%',
-        backgroundColor: '#51545F',
+        backgroundColor: '#383838',
         marginTop: '15px',
         marginLeft: '15px',
         marginRight: 'auto',
@@ -52,16 +52,15 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
 
     const ChatFooter = styled('div')({
         textAlign: 'center',
-        backgroundColor: '#262A38',
-        height: '15%',
+        backgroundColor: '#161616'
     })
 
     const UserInput = styled(TextField)({
         '& input': {
-            color: '#DCDCDF'
+            color: '#DCDCDF',
         },
-        '& fieldset': {
-            borderColor: '#5A6C83'
+        '& .MuiInputBase-root': {
+            borderRadius: '20px'
         },
         '& .MuiOutlinedInput-root': {
             '&.Mui-focused fieldset': {
@@ -69,33 +68,31 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                 borderWidth: '3px'
             },
             '& fieldset': {
-                borderWidth: '2px'
+                borderColor: '#383838',
+                borderWidth: '1.5px'
             }
-        },
-        '& .MuiInputBase-root': {
-            borderRadius: '25px',
-            color: 'white'
         },
         '& .MuiInputBase-root:hover': {
             '& fieldset': {
-                borderColor: '#5A6C83'
+                borderColor: '#383838',
+                borderWidth: '3px'
             }
         },
         '& .Mui-focused.MuiInputBase-root:hover': {
             '& fieldset': {
-                borderColor: '#DCDCDF',
+                borderColor: '#FFFFFF',
                 borderWidth: '3px'
             }
         },
-        width: '75%',
+        width: '70%',
         margin: '15px'
     })
 
     const ChatButton = styled(IconButton)({
         marginTop: '20px',
-        color: '#DCDCDF',
+        color: 'rgba(255, 255, 255, 1)',
         '&:hover': {
-            backgroundColor: '#3E4B5B'
+            backgroundColor: 'rgba(255, 255, 255, 0.1)'
         }
     });
 
@@ -181,7 +178,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
 
     return (
         <Grid container>
-            <Grid item xs={12} sx={{ height: '75vh' }}>
+            <Grid item xs={12} sx={{ height: '74.2vh' }}>
                 <ChatBox>
                     {userMessage !== '' &&
                         <UserChatBubble>
@@ -198,11 +195,11 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                 <ChatFooter sx={{ height: '100%' }}>
                     <form onSubmit={handleSubmit}>
                         <ChatButton onClick={handleRetry}>
-                            <ReplayRoundedIcon fontSize='large' htmlColor='#5A6C83'/>
+                            <ReplayRoundedIcon fontSize='large' htmlColor='#DCDCDF'/>
                         </ChatButton>
                         <UserInput disabled={isLoading} placeholder='Ask DataDiver a question...' />
                         <ChatButton type='submit' disabled={isLoading}>
-                            <SendRoundedIcon fontSize='large' htmlColor='#5A6C83'/>
+                            <SendRoundedIcon fontSize='large' htmlColor='#DCDCDF'/>
                         </ChatButton>
                     </form>
                 </ChatFooter>

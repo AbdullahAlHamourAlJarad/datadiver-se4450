@@ -15,10 +15,10 @@ function DataDiver({drawerOpen} : Readonly<DataDiverProps>) {
 
     return (
         <>
-            <Grid item sx={{ height: '90vh' }} xs={drawerOpen ? 9 : 12}>
+            <Grid item xs={drawerOpen ? 9 : 12}>
                 <Chat dbURL={dbURL} dbName={dbName} dbUsername={dbUsername} dbPassword={dbPassword} />
             </Grid>
-            <Grid item sx={{ height: '90vh' }} xs={3} hidden={!drawerOpen}>
+            <Grid item xs={3} hidden={!drawerOpen}>
                 <Drawer dbURL={dbURL} dbName={dbName} dbUsername={dbUsername} dbPassword={dbPassword} setDbURL={setDbURL} setDbName={setDbName} setDbUsername={setDbUsername} setDbPassword={setDbPassword}/>
             </Grid>
         </>
