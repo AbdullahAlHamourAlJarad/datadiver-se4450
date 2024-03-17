@@ -1,14 +1,10 @@
 import { Grid, IconButton, Paper, Stack, TextField, Typography, styled } from '@mui/material';
-import React, { useContext, useEffect, useRef, useState } from 'react'
-import { ConversationContext, IServerResponse } from '../Provider'
-import axios from 'axios'
-import Typing from './Typing'
-import InspectQuery from './InspectQuery';
-import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded'
-import SendRoundedIcon from '@mui/icons-material/SendRounded'
-import { GridColDef, GridRowsProp } from '@mui/x-data-grid';
-import DataTable from './DataTable';
-import TypoCorrection from './TypoCorrection';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { ConversationContext, IServerResponse } from '../Provider';
+import axios from 'axios';
+import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded';
+import SendRoundedIcon from '@mui/icons-material/SendRounded';
+import SystemChatMessage from './SystemChatMessage';
 
 
 type ChatProps = {
@@ -18,89 +14,88 @@ type ChatProps = {
     dbPassword: string
 }
 
-const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
-    const ChatBox = styled(Stack)({
-        backgroundColor: '#161616',
-        height: '100%',
-        alignItems: 'center',
-        overflowY: 'scroll',
-    })
+const ChatBox = styled(Stack)({
+    backgroundColor: '#161616',
+    height: '100%',
+    alignItems: 'center',
+    overflowY: 'scroll',
+})
 
-    const UserChatBubble = styled(Paper)({
-        maxWidth: '50%',
-        backgroundColor: '#262626',
-        marginTop: '15px',
-        marginLeft: 'auto',
-        marginRight: '15px'
-    })
+const UserChatBubble = styled(Paper)({
+    maxWidth: '50%',
+    backgroundColor: '#262626',
+    marginTop: '15px',
+    marginLeft: 'auto',
+    marginRight: '15px'
+})
 
-    const SystemChatBubble = styled(Paper)({
-        maxWidth: '50%',
-        backgroundColor: '#383838',
-        marginTop: '15px',
-        marginLeft: '15px',
-        marginRight: 'auto',
-        padding: '15px'
-    })
+export const ChatLine = styled(Typography)({
+    maxWidth: '100%',
+    color: '#DCDCDF',
+    overflowWrap: 'break-word',
+    padding: '7px'
+});
 
-    const ChatLine = styled(Typography)({
-        maxWidth: '100%',
+const ChatFooter = styled('div')({
+    textAlign: 'center',
+    backgroundColor: '#161616'
+})
+
+const UserInput = styled(TextField)({
+    '& input': {
         color: '#DCDCDF',
-        overflowWrap: 'break-word',
-        padding: '7px'
-    });
-
-    const ChatFooter = styled('div')({
-        textAlign: 'center',
-        backgroundColor: '#161616'
-    })
-
-    const UserInput = styled(TextField)({
-        '& input': {
-            color: '#DCDCDF',
+    },
+    '& .MuiInputBase-root': {
+        borderRadius: '20px'
+    },
+    '& .MuiOutlinedInput-root': {
+        '&.Mui-focused fieldset': {
+            borderColor: '#DCDCDF',
+            borderWidth: '3px'
         },
-        '& .MuiInputBase-root': {
-            borderRadius: '20px'
-        },
-        '& .MuiOutlinedInput-root': {
-            '&.Mui-focused fieldset': {
-                borderColor: '#DCDCDF',
-                borderWidth: '3px'
-            },
-            '& fieldset': {
-                borderColor: '#383838',
-                borderWidth: '1.5px'
-            }
-        },
-        '& .MuiInputBase-root:hover': {
-            '& fieldset': {
-                borderColor: '#383838',
-                borderWidth: '3px'
-            }
-        },
-        '& .Mui-focused.MuiInputBase-root:hover': {
-            '& fieldset': {
-                borderColor: '#FFFFFF',
-                borderWidth: '3px'
-            }
-        },
-        width: '70%',
-        margin: '15px'
-    })
-
-    const ChatButton = styled(IconButton)({
-        marginTop: '20px',
-        color: 'rgba(255, 255, 255, 1)',
-        '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.1)'
+        '& fieldset': {
+            borderColor: '#383838',
+            borderWidth: '1.5px'
         }
-    });
+    },
+    '& .MuiInputBase-root:hover': {
+        '& fieldset': {
+            borderColor: '#383838',
+            borderWidth: '3px'
+        }
+    },
+    '& .Mui-focused.MuiInputBase-root:hover': {
+        '& fieldset': {
+            borderColor: '#FFFFFF',
+            borderWidth: '3px'
+        }
+    },
+    width: '70%',
+    margin: '15px'
+})
 
+const ChatButton = styled(IconButton)({
+    marginTop: '20px',
+    color: 'rgba(255, 255, 255, 1)',
+    '&:hover': {
+        backgroundColor: 'rgba(255, 255, 255, 0.1)'
+    }
+});
+
+export const StyledButton = styled("button")({
+    backgroundColor: "inherit", 
+    color: "#D3D3D3", 
+    margin: "0 auto", 
+    marginTop: "10px", 
+    display: "block"
+});
+
+const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const {userMessagesList, setUserMessagesList, systemMessagesList, setSystemMessagesList, isChatLoading, currentConversationId} = useContext(ConversationContext);
     const chatContainerRef = useRef<HTMLInputElement>(null);
 
-    const [ error, setError ] = useState<string | null>(null);
+    const [ error, setError ] = useState<string | undefined>(undefined);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -111,7 +106,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
             return temp;
         });
         setIsLoading(true)
-        setError(null)
+        setError(undefined)
 
         axios.get("/conversation/answer", {
             params: {
@@ -139,6 +134,11 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                     return temp;
                 });
             } else {
+                setSystemMessagesList(prev => {
+                    let temp = prev;
+                    temp.push({messageId: -1, message: "Error Fetching Data!"});
+                    return temp;
+                });
                 console.error("Error fetching data:", error);
                 setError("Error Fetching Data!");
             }
@@ -151,47 +151,6 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
 
     const handleRetry = (e: React.MouseEvent<HTMLButtonElement>) => {
         console.log("Retry")
-    }
-
-    const renderSystemChat = (i: number) => {
-        if (i === systemMessagesList.length && isLoading) {
-            return (
-                <SystemChatBubble>
-                    <ChatLine>
-                        <Typing />
-                    </ChatLine>
-                </SystemChatBubble>
-            );
-        } else if (systemMessagesList[i]) {
-            let columns: GridColDef[];
-            let rows: GridRowsProp;
-
-            if(systemMessagesList[i].data && systemMessagesList[i].data!.length > 0) {
-                columns = Object.keys(systemMessagesList[i].data![0])
-                    .map(col => {return {field: col, headerName: col }});
-                rows = systemMessagesList[i].data!.map((row: any, index: number) => {
-                    return {...row, id: index}
-                });
-            }
-
-            return (
-                <SystemChatBubble>
-                    {systemMessagesList[i].interpreted_question && <TypoCorrection typoFix={systemMessagesList[i].interpreted_question!} />}
-                    {systemMessagesList[i].message}
-                    {systemMessagesList[i].data && systemMessagesList[i].data!.length > 0 && <DataTable columns={columns!} rows={rows!} />}
-                    {systemMessagesList[i].query && <InspectQuery query={systemMessagesList[i].query}/>}
-                </SystemChatBubble>
-            );
-        } else if(error) {
-            return (
-                <SystemChatBubble>
-                    <ChatLine>
-                        {error}
-                    </ChatLine>
-                </SystemChatBubble>
-            );
-
-        }
     }
 
     const renderChat = () => {
@@ -207,7 +166,15 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                             </ChatLine>
                         </UserChatBubble>
                     }
-                    {renderSystemChat(i)}   
+                    <SystemChatMessage key={i} 
+                        isLoading={i === systemMessagesList.length && isLoading} 
+                        systemMessage={systemMessagesList[i]} 
+                        error={error}
+                        dbURL={dbURL}
+                        dbName={dbName}
+                        dbUsername={dbUsername}
+                        dbPassword={dbPassword}
+                    /> 
                 </>
             )
         }

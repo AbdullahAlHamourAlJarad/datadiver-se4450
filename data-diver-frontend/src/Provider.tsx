@@ -5,7 +5,7 @@ export interface IServerResponse {
     message?: string,
     data?: { [key: string]: any },
     interpreted_question?: string,
-    query: string,
+    query?: string,
     messageId: number
 }
 

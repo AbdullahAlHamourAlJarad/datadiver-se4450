@@ -1,5 +1,6 @@
 import React, {useState} from 'react'
 import SearchIcon from '@mui/icons-material/Search';
+import { StyledButton } from './Chat';
 
 const InspectQuery = (props: {query: string}) => {
     const [showQuery, setShowQuery] = useState(false);
@@ -9,10 +10,10 @@ const InspectQuery = (props: {query: string}) => {
     }
 
     return (
-        <button style={{backgroundColor: "inherit", color: "#D3D3D3", margin: "0 auto", marginTop: "10px", display: "block" }} onClick={handleOnClick}>
+        <StyledButton onClick={handleOnClick}>
             <SearchIcon htmlColor='#D3D3D3' style={{ verticalAlign: "middle" }}/> 
             {showQuery ? props.query :  "Inspect Query"}
-        </button>
+        </StyledButton>
     )
 }
 

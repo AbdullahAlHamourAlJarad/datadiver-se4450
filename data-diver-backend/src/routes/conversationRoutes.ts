@@ -15,7 +15,6 @@ export interface IServerResponse {
     interpreted_question?: string,
     query: string,
     messageId: number, 
-    hasData: boolean
 }
 
 export type IMessage = {
@@ -99,16 +98,19 @@ conversationRoutes.get('/answer', async (req, res, next) => {
         let systemPrompt = createOpenAISystemRolePrompt(parseDatabaseSchema(result.recordset));
 
         //Get Previous messages
-        let prevMessages = await dataDiverDBConn.request()
+        let prevUserMessages = await dataDiverDBConn.request()
             .input('conversationID', sql.VarChar, conversationId)
-            .query('SELECT * FROM [Messages] WHERE conversationID = @conversationID');
+            .query('SELECT * FROM [UserMessage] WHERE conversationID = @conversationID');
+        let prevSystemMessages = await dataDiverDBConn.request()
+            .input('conversationID', sql.VarChar, conversationId)
+            .query('SELECT * FROM [SystemMessage] WHERE conversationID = @conversationID');
 
         //Convert english to sql statement
         let openAIResponse = await makeOpenAIRequest(
             systemPrompt, 
             question, 
-            prevMessages.recordset.filter(msg => msg.isUserMessage).map(msg => msg.chatString),
-            prevMessages.recordset.filter(msg => !msg.isUserMessage).map(msg => msg.chatString), 
+            prevUserMessages.recordset.map(msg => msg.chatString),
+            prevSystemMessages.recordset.map(msg => msg.query), 
         );
         console.log("OpenAI query: ", openAIResponse.query);
 
@@ -120,28 +122,25 @@ conversationRoutes.get('/answer', async (req, res, next) => {
         await dataDiverDBConn.request()
             .input('conversationID', sql.VarChar, conversationId)
             .input('chatString', sql.NVarChar, question)
-            .input('isUserMessage', sql.Bit, 1)
             .input('timestamp', sql.DateTime, new Date())
-            .query('INSERT INTO [Messages] (conversationID, chatString, isUserMessage, timestamp) VALUES (@conversationID, @chatString, @isUserMessage, @timestamp)');
+            .query('INSERT INTO [UserMessage] (conversationID, chatString, timestamp) VALUES (@conversationID, @chatString, @timestamp)');
 
         // Insert system answer to messages
+        let interpreted_question: string | null = 
+            openAIResponse.interpreted_question && question.toLowerCase() !== openAIResponse.interpreted_question.toLowerCase() ? 
+            openAIResponse.interpreted_question : null;
         const answerMessage = await dataDiverDBConn.request()
             .input('conversationID', sql.VarChar, conversationId)
-            .input('chatString', sql.NVarChar, openAIResponse.query)
-            .input('isUserMessage', sql.Bit, 0)
+            .input('query', sql.NVarChar, openAIResponse.query)
+            .input('interpreted_question', sql.NVarChar, interpreted_question)
             .input('timestamp', sql.DateTime, new Date())
-            .query('INSERT INTO [Messages] (conversationID, chatString, isUserMessage, timestamp) VALUES (@conversationID, @chatString, @isUserMessage, @timestamp);SELECT @@IDENTITY AS ID;')
+            .query('INSERT INTO [SystemMessage] (conversationID, query, interpreted_question, timestamp) VALUES (@conversationID, @query, @interpreted_question, @timestamp);SELECT @@IDENTITY AS ID;')
 
             // return response to user
         if(!answer.recordset || answer.recordset.length === 0) {
             res.status(404).send({message: "No results found", query: openAIResponse.query, messageId: answerMessage.recordset[0].ID})
         } else {
-            let response: IServerResponse = {data: answer.recordset, query: openAIResponse.query, messageId: answerMessage.recordset[0].ID, hasData: true}
-
-            if(openAIResponse.interpreted_question && question.toLowerCase() !== openAIResponse.interpreted_question.toLowerCase()) {
-                response = {...response, interpreted_question: openAIResponse.interpreted_question}
-            }
-
+            let response: IServerResponse = {data: answer.recordset, query: openAIResponse.query, messageId: answerMessage.recordset[0].ID, interpreted_question: interpreted_question ?? undefined}
             res.send(response)
         }
 
@@ -164,16 +163,19 @@ conversationRoutes.get('/messages', async (req, res, next) => {
         const connection = await createDataDiverDBConnection();
        
         //Get list of messages by conversation ID
-        let messageList = await connection.request()
+        let userMessageList = await connection.request()
             .input('conversationID', sql.Int, conversationID)
-            .query('SELECT * FROM [Messages] WHERE conversationID = @conversationID ORDER BY timestamp');
+            .query('SELECT * FROM [UserMessage] WHERE conversationID = @conversationID ORDER BY timestamp');
+        let systemMessageList = await connection.request()
+            .input('conversationID', sql.Int, conversationID)
+            .query('SELECT * FROM [SystemMessage] WHERE conversationID = @conversationID ORDER BY timestamp');
 
-        let userMessages = messageList.recordset.filter(msg => msg.isUserMessage).map(msg => msg.chatString);
-        let systemMessages: IServerResponse[] = (messageList.recordset.filter(msg => !msg.isUserMessage) as IMessage[]).map(msg => {
+        let userMessages = userMessageList.recordset.map(msg => msg.chatString);
+        let systemMessages: IServerResponse[] = systemMessageList.recordset.map(msg => {
             return {
                 messageId: msg.messageID,
-                query: msg.chatString,
-                hasData: true
+                query: msg.query,
+                interpreted_question: msg.interpreted_question
             }
         });
 
@@ -182,9 +184,30 @@ conversationRoutes.get('/messages', async (req, res, next) => {
         connection.close();
     } catch (error: any) {
         console.error(error)
-        next(new Error("Failed to Create New Conversation"))
+        next(new Error("Failed to Retrieve Conversation"))
     }
+});
 
+conversationRoutes.get('/regenerate-data', async (req, res, next) => {
+    let dbURL = req.query.dbURL as string;
+    let dbName = req.query.dbName as string;
+    let dbUserName = req.query.dbUserName as string;
+    let dbPass = req.query.dbPass as string;
+    let query = req.query.query as string;
+
+    try {
+        // Create a new DB connection
+        const connection = await createNewDBConnection(dbURL, dbName, dbUserName, dbPass);
+       
+        //Get data requested
+        let answer = await connection.request().query(query);
+
+        res.send(answer.recordset);
+        connection.close();
+    } catch (error: any) {
+        console.error(error)
+        next(new Error("Failed to Retrieve Data"))
+    }
 });
 
 
