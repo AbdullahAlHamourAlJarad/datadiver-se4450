@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react'
-import { Paper } from '@mui/material'
+import { Paper, Typography } from '@mui/material'
 import { ConversationContext } from '../Provider'
 import axios from 'axios'
 
@@ -10,7 +10,7 @@ export type IConversationTitle = {
 }
 
 
-const ConversationTitle = ({title, conversationId, setErrorMessage}: IConversationTitle) => {
+const ConversationTitle = ({ title, conversationId, setErrorMessage }: IConversationTitle) => {
     const [hovered, setHovered] = useState(false);
     const { currentConversationId, setIsChatLoading, setUserMessagesList, setSystemMessagesList, setCurrentConversationId } = useContext(ConversationContext)
 
@@ -40,19 +40,23 @@ const ConversationTitle = ({title, conversationId, setErrorMessage}: IConversati
     }
 
     return (
-        <Paper 
+        <Paper
             style={{
-                backgroundColor: currentConversationId === conversationId || hovered ? '#555' : '#333',
-                color: '#fff',
-                padding: '10px',
+                backgroundColor: currentConversationId === conversationId || hovered ? '#262626' : '#161616',
+                color: '#DCDCDF',
+                padding: '3px',
                 cursor: 'pointer',
                 transition: 'background-color 0.3s',
+                margin: '5px',
+                boxShadow: 'none'
             }}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={handleOnClick}
         >
-            {title}
+            <Typography variant='overline'>
+                {title}
+            </Typography>
         </Paper>
     )
 }

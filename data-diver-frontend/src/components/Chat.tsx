@@ -208,7 +208,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                         <ChatButton onClick={handleRetry}>
                             <ReplayRoundedIcon fontSize='large' htmlColor='#DCDCDF'/>
                         </ChatButton>
-                        <UserInput disabled={isLoading || isChatLoading || !currentConversationId} placeholder='Ask DataDiver a question...' />
+                        <UserInput disabled={isLoading || isChatLoading || !currentConversationId} placeholder='Ask DataDiver a question...' autoComplete='off' />
                         <ChatButton type='submit' disabled={isLoading || isChatLoading || !currentConversationId}>
                             <SendRoundedIcon fontSize='large' htmlColor='#DCDCDF'/>
                         </ChatButton>

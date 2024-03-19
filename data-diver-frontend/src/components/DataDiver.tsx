@@ -18,7 +18,7 @@ function DataDiver({drawerOpen} : Readonly<DataDiverProps>) {
 
     return (
         <>
-            <Grid item sx={{ height: '90vh' }} xs={2}>
+            <Grid item xs={2}>
                 <Conversations setErrorMessage={setErrorMessage}/>
             </Grid>
             <Grid item xs={drawerOpen ? 7 : 10}>

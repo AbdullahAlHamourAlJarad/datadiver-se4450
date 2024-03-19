@@ -4,26 +4,26 @@
     max-width: 100%;
     & .table--header {
         color: #DCDCDF;
-        background-color: #262A38;
+        background-color: #1E1E1E;
     };
     & .MuiDataGrid-sortIcon {
         opacity: 1;
-        color: white;
+        color: #DCDCDF;
     };
     & .MuiDataGrid-menuIconButton {
         opacity: 1;
-        color: white;
+        color: #DCDCDF;
     };
     & .MuiDataGrid-filterIcon {
         opacity: 1;
-        color: white;
+        color: #DCDCDF;
     };
     & .MuiDataGrid-cellContent {
         overflow: hidden;
         text-overflow: unset!important;
     };
     & .MuiDataGrid-columnHeaders {
-        background-color: #262A38;
+        background-color: #1E1E1E;
     }
     & .MuiDataGrid-columnHeaderTitle {
         overflow: hidden;
