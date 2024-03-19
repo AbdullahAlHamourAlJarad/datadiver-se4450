@@ -7,6 +7,7 @@ const Login = () => {
     const navigate = useNavigate();
     const { login } = useContext(AuthContext);
     const [formData, setFormData] = useState({ email: '', password: '' });
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -16,10 +17,24 @@ const Login = () => {
         e.preventDefault();
 
         try {
-            await login(formData.email, formData.password);
-            // Redirect to home page or any other page on successful login
-            navigate('/');
+            const response = await fetch('/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            const responseData = await response.json();
+
+            if (response.ok) {
+                navigate('/');
+            } else {
+                setErrorMessage(responseData.message);
+            }
         } catch (error) {
+            console.error('Login error:', error);
+            setErrorMessage('Failed to login. Please try again later.');
         }
     };
 
@@ -55,6 +70,7 @@ const Login = () => {
                 <p className={styles.signupLink}>
                     Don't have an account? <a href="/signup" className={styles.signupLink}>Sign up here</a>
                 </p>
+                {errorMessage && <p className={styles.error}>{errorMessage}</p>}
             </form>
         </div>
     );
