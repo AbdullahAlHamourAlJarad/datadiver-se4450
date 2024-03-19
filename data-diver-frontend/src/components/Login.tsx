@@ -1,10 +1,12 @@
+// Login.tsx
+
 import React, { useContext, useState } from 'react';
 import { AuthContext } from '../AuthProvider';
 import { useNavigate } from 'react-router-dom';
 import styles from '../css/Login.module.css';
 
 const Login = () => {
-    const navigate = useNavigate();
+    const navigate = useNavigate(); // Access the navigate function
     const { login } = useContext(AuthContext);
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -17,7 +19,7 @@ const Login = () => {
         e.preventDefault();
 
         try {
-            const response = await fetch('/auth/login', {
+            const response = await fetch('/auth/login', { // Send POST request to the correct endpoint
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -25,12 +27,12 @@ const Login = () => {
                 body: JSON.stringify(formData),
             });
 
-            const responseData = await response.json();
-
             if (response.ok) {
-                navigate('/');
+                // If login is successful, navigate to the conversation page
+                navigate('/conversation');
             } else {
-                setErrorMessage(responseData.message);
+                const errorData = await response.json();
+                setErrorMessage(errorData.message);
             }
         } catch (error) {
             console.error('Login error:', error);
@@ -40,7 +42,7 @@ const Login = () => {
 
     return (
         <div className={styles.loginContainer}>
-            <form onSubmit={handleSubmit} className={styles.loginForm}>
+            <form onSubmit={handleSubmit} method="POST" className={styles.loginForm}>
                 <h1 className={styles.loginTitle}>Login to Your Account</h1>
                 <div className={styles.formGroup}>
                     <label htmlFor="email" className={styles.inputLabel}>Email address</label>
