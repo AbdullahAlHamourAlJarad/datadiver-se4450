@@ -83,19 +83,19 @@ const ChatButton = styled(IconButton)({
 });
 
 export const StyledButton = styled("button")({
-    backgroundColor: "inherit", 
-    color: "#D3D3D3", 
-    margin: "0 auto", 
-    marginTop: "10px", 
+    backgroundColor: "inherit",
+    color: "#D3D3D3",
+    margin: "0 auto",
+    marginTop: "10px",
     display: "block"
 });
 
 const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
     const [isLoading, setIsLoading] = useState(false);
-    const {userMessagesList, setUserMessagesList, systemMessagesList, setSystemMessagesList, isChatLoading, currentConversationId} = useContext(ConversationContext);
+    const { userMessagesList, setUserMessagesList, systemMessagesList, setSystemMessagesList, isChatLoading, currentConversationId } = useContext(ConversationContext);
     const chatContainerRef = useRef<HTMLInputElement>(null);
 
-    const [ error, setError ] = useState<string | undefined>(undefined);
+    const [error, setError] = useState<string | undefined>(undefined);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -127,7 +127,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
             });
         }).catch(error => {
             console.log(error.response.data)
-            if(error.response.data.query) {
+            if (error.response.data.query) {
                 setSystemMessagesList(prev => {
                     let temp = prev;
                     temp.push(error.response.data);
@@ -136,7 +136,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
             } else {
                 setSystemMessagesList(prev => {
                     let temp = prev;
-                    temp.push({messageId: -1, message: "Error Fetching Data!"});
+                    temp.push({ messageId: -1, message: "Error Fetching Data!" });
                     return temp;
                 });
                 console.error("Error fetching data:", error);
@@ -150,13 +150,58 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
     }
 
     const handleRetry = (e: React.MouseEvent<HTMLButtonElement>) => {
-        console.log("Retry")
+        const textField = userMessagesList[userMessagesList.length - 1] as string;
+        setUserMessagesList(prev => {
+            let temp = prev;
+            temp.push(textField);
+            return temp;
+        });
+        setIsLoading(true)
+        setError(undefined)
+
+        axios.get("/conversation/answer", {
+            params: {
+                dbURL: dbURL,
+                dbName: dbName,
+                dbUserName: dbUsername,
+                dbPass: dbPassword,
+                question: textField,
+                conversationId: currentConversationId,
+            }
+        }).then((response) => {
+            console.log("Response", response)
+            let serverResponse: IServerResponse = response.data;
+            setSystemMessagesList(prev => {
+                let temp = prev;
+                temp.push(serverResponse);
+                return temp;
+            });
+        }).catch(error => {
+            console.log(error.response.data)
+            if (error.response.data.query) {
+                setSystemMessagesList(prev => {
+                    let temp = prev;
+                    temp.push(error.response.data);
+                    return temp;
+                });
+            } else {
+                setSystemMessagesList(prev => {
+                    let temp = prev;
+                    temp.push({ messageId: -1, message: "Error Fetching Data!" });
+                    return temp;
+                });
+                console.error("Error fetching data:", error);
+                setError("Error Fetching Data!");
+            }
+        }).finally(() => {
+            setIsLoading(false);
+        });
     }
 
     const renderChat = () => {
         let chat = [];
-        
-        for(let i = 0; i < userMessagesList.length; i++) {
+
+        for (let i = 0; i < userMessagesList.length; i++) {
             chat.push(
                 <>
                     {userMessagesList[i] !== '' &&
@@ -166,15 +211,15 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                             </ChatLine>
                         </UserChatBubble>
                     }
-                    <SystemChatMessage key={i} 
-                        isLoading={i === systemMessagesList.length && isLoading} 
-                        systemMessage={systemMessagesList[i]} 
+                    <SystemChatMessage key={i}
+                        isLoading={i === systemMessagesList.length && isLoading}
+                        systemMessage={systemMessagesList[i]}
                         error={error}
                         dbURL={dbURL}
                         dbName={dbName}
                         dbUsername={dbUsername}
                         dbPassword={dbPassword}
-                    /> 
+                    />
                 </>
             )
         }
@@ -190,7 +235,7 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
                 const { currentTarget: target } = event;
                 //@ts-ignore
                 target!.scroll({ top: target!.scrollHeight });
-          });
+            });
         }
     })
 
@@ -205,12 +250,12 @@ const Chat = ({ dbURL, dbName, dbUsername, dbPassword }: ChatProps) => {
             <Grid item xs={12} sx={{ height: '15vh' }}>
                 <ChatFooter sx={{ height: '100%' }}>
                     <form onSubmit={handleSubmit}>
-                        <ChatButton onClick={handleRetry}>
-                            <ReplayRoundedIcon fontSize='large' htmlColor='#DCDCDF'/>
+                        <ChatButton onClick={handleRetry} disabled={isLoading || isChatLoading || !currentConversationId}>
+                            <ReplayRoundedIcon fontSize='large' htmlColor='#DCDCDF' />
                         </ChatButton>
                         <UserInput disabled={isLoading || isChatLoading || !currentConversationId} placeholder='Ask DataDiver a question...' autoComplete='off' />
                         <ChatButton type='submit' disabled={isLoading || isChatLoading || !currentConversationId}>
-                            <SendRoundedIcon fontSize='large' htmlColor='#DCDCDF'/>
+                            <SendRoundedIcon fontSize='large' htmlColor='#DCDCDF' />
                         </ChatButton>
                     </form>
                 </ChatFooter>
