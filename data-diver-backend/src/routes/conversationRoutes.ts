@@ -40,7 +40,7 @@ conversationRoutes.get('/conversations', async (req, res, next) => {
         connection.close();
     } catch (error: any) {
         console.error(error)
-        next(new Error("Failed to Create New Conversation"))
+        next(new Error("Failed to Retrieve Conversations"))
     }
 
 });
