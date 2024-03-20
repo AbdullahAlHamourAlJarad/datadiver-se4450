@@ -210,6 +210,34 @@ conversationRoutes.get('/regenerate-data', async (req, res, next) => {
     }
 });
 
+conversationRoutes.delete("/conversation", async (req, res, next) => {
+    const { conversationId } = req.body;
+
+    try {
+        // Create a new DB connection
+        const connection = await createDataDiverDBConnection();
+       
+        // Execute SQL queries to delete records
+        await connection.request()
+                .input('conversationId', sql.Int, conversationId)
+                .query('DELETE FROM UserMessage WHERE conversationID = @conversationId');
+            
+        await connection.request()
+            .input('conversationId', sql.Int, conversationId)
+            .query('DELETE FROM SystemMessage WHERE conversationID = @conversationId');
+
+        await connection.request()
+            .input('conversationId', sql.Int, conversationId)
+            .query('DELETE FROM Conversations WHERE conversationID = @conversationId');
+        
+        // Send success response
+        res.status(200).send({ message: 'Delete successful.' });
+        connection.close();
+    } catch (error: any) {
+        console.error(error)
+        next(new Error("Failed to Delete Conversation"))
+    }
+});
 
 /**
  * 

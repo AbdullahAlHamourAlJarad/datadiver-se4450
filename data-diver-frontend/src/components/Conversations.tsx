@@ -118,7 +118,7 @@ const Conversations = ({ setErrorMessage }: ConversationProps) => {
         <DrawerBox>
             <Error errorMessage={conversationListErrorMessage} setErrorMessage={setConversationListErrorMessage} />
 
-            {conversationList.map(conv => <ConversationTitle key={conv.conversationId} title={conv.title} conversationId={conv.conversationId} setErrorMessage={setErrorMessage} />)}
+            {conversationList.map(conv => <ConversationTitle key={conv.conversationId} title={conv.title} conversationId={conv.conversationId} setConversationList={setConversationList} setErrorMessage={setErrorMessage} />)}
 
             <div style={{ padding: "5px" }}>
                 <TitleInput placeholder="New chat title..." autoComplete='off' inputRef={newConversationTitleRef} disabled={isLoading} InputProps={{
