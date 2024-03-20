@@ -1,14 +1,17 @@
-// Signup.tsx
 import React, { useState } from 'react';
 import axios from 'axios';
 import styles from '../css/Signup.module.css';
 import Grid from '@mui/material/Grid';
-import Error from './Error'; // Make sure the path to this component is correct
+import Error from './Error';
 import { ErrorBoundary } from 'react-error-boundary';
+import { useNavigate } from 'react-router-dom';
 
 const Signup = () => {
+  const navigate = useNavigate(); // Access the navigate function
+
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,11 +20,12 @@ const Signup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
   
+    setIsLoading(true);
     try {
       const response = await axios.post('/auth/signup', formData);
       console.log('Account created:', response.data);
-      // Redirect to login on successful signup
-      window.location.href = '/login';
+      
+      navigate('/login'); // Redirect to login on successful signup
     } catch (error: any) {
       if (axios.isAxiosError(error)) {
         setErrorMessage(error.response?.data.message || 'An error occurred during signup.');
@@ -30,6 +34,8 @@ const Signup = () => {
         setErrorMessage('An unexpected error occurred.');
         console.error('Signup error:', error.message);
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -63,7 +69,7 @@ const Signup = () => {
                   required
                 />
               </div>
-              <button type="submit" className={styles.submitBtn}>Create My Account</button>
+              <button type="submit" className={styles.submitBtn} disabled={isLoading}>Create My Account</button>
             </form>
             <p className={styles.loginLink}>
               Already have an account? <a href="/login">Login instead</a>

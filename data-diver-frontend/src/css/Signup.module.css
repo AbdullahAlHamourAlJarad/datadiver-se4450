@@ -56,6 +56,11 @@
   background-color: #3700B3; /* Darker shade for the button on hover, adjust as needed */
 }
 
+.submitBtn:disabled {
+  background-color: #CCCCCC;
+  cursor: default;
+}
+
 .loginLink {
   text-align: center;
   display: block;

@@ -1,6 +1,4 @@
-// Login.tsx
-
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../AuthProvider';
 import { useNavigate } from 'react-router-dom';
 import styles from '../css/Login.module.css';
@@ -12,6 +10,7 @@ const Login = () => {
     const { login } = useContext(AuthContext);
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,8 +19,10 @@ const Login = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        setIsLoading(true); 
+
         try {
-            login(formData.email, formData.password)
+            await login(formData.email, formData.password)
                 .then(() => {
                     // If login is successful, navigate to the conversation page
                     navigate('/');
@@ -33,6 +34,8 @@ const Login = () => {
         } catch (error) {
             console.error('Login error:', error);
             setErrorMessage('Failed to login. Please try again later.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -66,7 +69,7 @@ const Login = () => {
                             required
                         />
                     </div>
-                    <button type="submit" className={styles.submitBtn}>Login</button>
+                    <button type="submit" disabled={isLoading} className={styles.submitBtn}>Login</button>
                     <p className={styles.signupLink}>
                         Don't have an account? <a href="/signup" className={styles.signupLink}>Sign up here</a>
                     </p>
