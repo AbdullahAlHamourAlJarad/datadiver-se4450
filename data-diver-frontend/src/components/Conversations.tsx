@@ -76,8 +76,7 @@ const Conversations = ({ setErrorMessage }: ConversationProps) => {
                 newConversationTitleRef.current.value = '';
             }
 
-            //TODO change email
-            await axios.post('/conversation/new-conversation', { email: "kmeawad@uwo.ca", title: newTitle })
+            await axios.post('/conversation/new-conversation', {email: user.email, title: newTitle})
                 .then((response) => {
                     if (response.data) {
                         setConversationList(
@@ -98,8 +97,7 @@ const Conversations = ({ setErrorMessage }: ConversationProps) => {
 
     useEffect(() => {
         setIsLoading(true);
-        //TODO change email
-        axios.get("/conversation/conversations", { params: { email: "kmeawad@uwo.ca" } })
+        axios.get("/conversation/conversations", { params: { email: user.email } })
             .then((response) => {
                 setConversationList(
                     response.data.map((conv: any) => {
@@ -114,7 +112,7 @@ const Conversations = ({ setErrorMessage }: ConversationProps) => {
             .finally(() => {
                 setIsLoading(false);
             });
-    }, [])
+    }, [user.email]);
 
     return (
         <DrawerBox>

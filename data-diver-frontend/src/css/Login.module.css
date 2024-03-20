@@ -1,0 +1,83 @@
+/* Login.module.css */
+.loginContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%; /* Ensure the container spans the full width */
+    background-color: #262A38; /* Dark background color similar to the data grid headers */
+    color: #DCDCDF; /* Text color similar to the data grid headers */
+    font-family: 'Roboto', sans-serif; /* Assuming Roboto is used, replace with your font if different */
+}
+
+.loginForm {
+    background: #1A1A2E; /* Dark blue background to match the theme */
+    padding: 2em;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Slight shadow for depth */
+    width: 100%;
+    max-width: 320px;
+}
+
+.loginTitle {
+    text-align: center;
+    margin-bottom: 1.5em;
+    color: #E6E6E6; /* Light text for contrast */
+}
+
+.formGroup {
+    margin-bottom: 1em;
+}
+
+.inputLabel {
+    display: block;
+    margin-bottom: 0.5em;
+}
+
+.inputField {
+    width: 100%;
+    padding: 0.75em;
+    border: 1px solid #DCDCDF; /* Light border color from your data grid styling */
+    background-color: #0F3460; /* Dark background for input fields */
+    color: #DCDCDF; /* Light text color to match your other components */
+    border-radius: 5px;
+}
+
+.inputField::placeholder {
+    color: #8d8c91; /* Placeholder color to match the typing dots */
+}
+
+.submitBtn {
+    width: 100%;
+    padding: 0.75em;
+    border: none;
+    background-color: #4e0eff; /* A bright color for the button to stand out, adjust as needed */
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.submitBtn:hover {
+    background-color: #3700B3; /* Darker shade for the button on hover, adjust as needed */
+}
+
+.submitBtn:disabled {
+    background-color: #CCCCCC;
+    cursor: default;
+}
+
+.signupLink {
+    text-align: center;
+    display: block;
+    margin-top: 2em;
+}
+
+.signupLink a {
+    color: #7591f3; /* A lighter shade for links, for contrast against the dark background */
+    text-decoration: none;
+}
+
+.signupLink a:hover {
+    text-decoration: underline;
+}
