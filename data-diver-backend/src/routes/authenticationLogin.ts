@@ -1,7 +1,7 @@
 import express from 'express';
 import { verifyPassword } from '../utils/passwordUtil';
 import * as sql from 'mssql';
-import { createNewDBConnection } from '../connectDB';
+import { createDataDiverDBConnection } from '../connectDB';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -12,12 +12,7 @@ authenticationLogin.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const connection = await createNewDBConnection(
-      process.env.DB_URL as string,
-      process.env.DB_NAME as string,
-      process.env.DB_USER as string,
-      process.env.DB_PASSWORD as string
-    );
+    const connection = await createDataDiverDBConnection();
 
     const existingUser = await connection.request()
       .input('email', sql.VarChar, email)
