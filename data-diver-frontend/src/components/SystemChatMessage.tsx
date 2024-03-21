@@ -77,14 +77,6 @@ const SystemChatMessage = ({ systemMessage, isLoading, error, dbURL, dbName, dbU
                 </ChatLine>
             </SystemChatBubble>
         );
-    } else if (error) {
-        return (
-            <SystemChatBubble>
-                <ChatLine>
-                    {error ?? "Unexpected Error"}
-                </ChatLine>
-            </SystemChatBubble>
-        );
     } else if(systemMessage) {
         let columns: GridColDef[];
         let rows: GridRowsProp;
@@ -110,6 +102,14 @@ const SystemChatMessage = ({ systemMessage, isLoading, error, dbURL, dbName, dbU
                     </StyledButton>
                 }
                 {systemMessage.query && <InspectQuery query={systemMessage.query}/>}
+            </SystemChatBubble>
+        );
+    }else if (error) {
+        return (
+            <SystemChatBubble>
+                <ChatLine>
+                    {error ?? "Unexpected Error"}
+                </ChatLine>
             </SystemChatBubble>
         );
     } else {
